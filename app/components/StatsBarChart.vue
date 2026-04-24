@@ -18,7 +18,7 @@ function fmt(v: number): string {
 </script>
 
 <template>
-  <div class="flex items-end gap-2 h-56 w-full">
+  <div class="flex gap-2 h-56 w-full">
     <div
       v-for="(b, i) in bars"
       :key="i"

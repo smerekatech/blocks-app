@@ -133,7 +133,7 @@ function pct(v: number): string {
         </li>
         <li
           v-for="a in stats?.byActivity ?? []"
-          :key="a.activityId"
+          :key="a.activityId ?? `custom:${a.name}`"
           class="flex items-center gap-3 py-2"
         >
           <span class="size-3 rounded-full shrink-0" :style="{ background: a.color }" />
