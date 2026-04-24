@@ -4,13 +4,16 @@ import type { Activity, Entry } from '~~/server/database/schema'
 const props = defineProps<{
   entry: Entry
   activities: Activity[]
+  revealed?: boolean
 }>()
 
 const emit = defineEmits<{
   updated: []
+  'open-change': [open: boolean]
 }>()
 
 const open = ref(false)
+watch(open, (v) => emit('open-change', v))
 const mode = ref<'list' | 'custom'>('list')
 const customName = ref('')
 const busy = ref(false)
@@ -75,7 +78,10 @@ async function saveCustom() {
   <UPopover v-model:open="open" :content="{ align: 'end', sideOffset: 4 }">
     <button
       type="button"
-      class="opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-primary cursor-pointer"
+      :class="[
+        revealed || open ? 'inline-block' : 'hidden group-hover:inline-block',
+        'text-muted hover:text-primary cursor-pointer'
+      ]"
       title="Edit"
       @click.stop
     >

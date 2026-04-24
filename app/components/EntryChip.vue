@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onClickOutside, onLongPress } from '@vueuse/core'
 import type { Activity, Entry } from '~~/server/database/schema'
 
 const props = defineProps<{
@@ -16,10 +17,36 @@ const emit = defineEmits<{
 const name = computed(() => props.activity?.name ?? props.entry.name ?? 'Unknown')
 const color = computed(() => props.activity?.color ?? '#64748b')
 const isHalf = computed(() => props.entry.blocks === 0.5)
+
+const rootEl = ref<HTMLElement | null>(null)
+const nameEl = ref<HTMLElement | null>(null)
+const revealed = ref(false)
+const menuOpen = ref(false)
+let longPressed = false
+
+onLongPress(nameEl, () => {
+  revealed.value = true
+  longPressed = true
+  setTimeout(() => { longPressed = false }, 400)
+}, { delay: 500, distanceThreshold: 10 })
+
+onClickOutside(rootEl, () => {
+  if (!menuOpen.value) revealed.value = false
+})
+
+function onToggleClick() {
+  if (longPressed) return
+  if (revealed.value) {
+    revealed.value = false
+    return
+  }
+  emit('toggle', props.entry)
+}
 </script>
 
 <template>
   <div
+    ref="rootEl"
     class="group flex items-center gap-2 rounded-md border border-default px-2 text-sm"
     :class="isHalf ? 'min-h-8 py-1' : 'min-h-16 py-2'"
     :style="{ background: color + '26' }"
@@ -28,10 +55,11 @@ const isHalf = computed(() => props.entry.blocks === 0.5)
       <UIcon name="i-lucide-grip-vertical" class="size-3.5" />
     </span>
     <button
+      ref="nameEl"
       type="button"
       class="flex flex-1 items-center gap-2 text-left cursor-pointer min-w-0"
       :title="isHalf ? 'Switch to full block' : 'Switch to half block'"
-      @click="emit('toggle', entry)"
+      @click="onToggleClick"
     >
       <span class="truncate">{{ name }}</span>
       <span
@@ -44,11 +72,16 @@ const isHalf = computed(() => props.entry.blocks === 0.5)
     <EditEntryMenu
       :entry="entry"
       :activities="activities"
+      :revealed="revealed"
       @updated="emit('updated')"
+      @open-change="menuOpen = $event"
     />
     <button
       type="button"
-      class="opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-error cursor-pointer"
+      :class="[
+        revealed ? 'inline-block' : 'hidden group-hover:inline-block',
+        'text-muted hover:text-error cursor-pointer'
+      ]"
       title="Delete"
       @click="emit('remove', entry)"
     >
