@@ -4,11 +4,13 @@ import type { Activity, Entry } from '~~/server/database/schema'
 const props = defineProps<{
   entry: Entry
   activity: Activity | undefined
+  activities: Activity[]
 }>()
 
 const emit = defineEmits<{
   toggle: [entry: Entry]
   remove: [entry: Entry]
+  updated: []
 }>()
 
 const name = computed(() => props.activity?.name ?? props.entry.name ?? 'Unknown')
@@ -39,6 +41,11 @@ const isHalf = computed(() => props.entry.blocks === 0.5)
         {{ isHalf ? '½' : '1' }}
       </span>
     </button>
+    <EditEntryMenu
+      :entry="entry"
+      :activities="activities"
+      @updated="emit('updated')"
+    />
     <button
       type="button"
       class="opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-error cursor-pointer"

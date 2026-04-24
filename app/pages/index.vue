@@ -110,6 +110,7 @@ const dayTotalLabel = computed(() => {
         @toggle="toggle"
         @remove="remove"
         @reorder="reorder"
+        @updated="refreshEntries"
       />
     </div>
 
@@ -126,6 +127,7 @@ const dayTotalLabel = computed(() => {
         @toggle="toggle"
         @remove="remove"
         @reorder="reorder"
+        @updated="refreshEntries"
       />
     </div>
   </UContainer>

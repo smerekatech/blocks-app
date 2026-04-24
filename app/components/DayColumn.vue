@@ -17,6 +17,7 @@ const emit = defineEmits<{
   toggle: [entry: Entry]
   remove: [entry: Entry]
   reorder: [entries: Entry[]]
+  updated: []
 }>()
 
 const sortedEntries = ref<Entry[]>([...props.entries])
@@ -66,8 +67,10 @@ const totalLabel = computed(() => {
         :key="e.id"
         :entry="e"
         :activity="e.activityId != null ? activitiesById.get(e.activityId) : undefined"
+        :activities="activities"
         @toggle="emit('toggle', $event)"
         @remove="emit('remove', $event)"
+        @updated="emit('updated')"
       />
       <AddEntryMenu
         :date="date"
