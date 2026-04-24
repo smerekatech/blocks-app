@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ name?: string, color?: string }>(event)
   const name = body?.name?.trim()
   if (!name) throw createError({ statusCode: 400, message: 'Name is required' })
-  const color = body?.color?.trim() || '#22c55e'
+  const color = body?.color?.trim() || '#64748b'
 
   const db = useDb()
   const [row] = await db.insert(schema.activities).values({ userId, name, color })

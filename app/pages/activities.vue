@@ -12,7 +12,7 @@ const active = computed(() => activities.value.filter(a => !a.archivedAt))
 const archived = computed(() => activities.value.filter(a => a.archivedAt))
 
 const newName = ref('')
-const newColor = ref('#22c55e')
+const newColor = ref('#64748b')
 const creating = ref(false)
 
 async function create() {
