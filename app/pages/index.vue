@@ -79,7 +79,7 @@ const dayTotalLabel = computed(() => {
 </script>
 
 <template>
-  <UContainer class="py-6 max-w-6xl">
+  <UContainer class="py-6 max-w-full">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <UButton icon="i-lucide-chevron-left" color="neutral" variant="ghost" size="sm" @click="prev" />
