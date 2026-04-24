@@ -97,11 +97,18 @@ const PALETTE = ['#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7
         <UDropdownMenu
           :items="[
             [{ label: 'Rename', icon: 'i-lucide-pencil', onSelect: () => rename(a) }],
-            PALETTE.map(c => ({ label: c, type: 'checkbox' as const, checked: a.color === c, onSelect: () => setColor(a, c) })),
+            PALETTE.map(c => ({ slot: 'color' as const, hex: c, checked: a.color === c, onSelect: () => setColor(a, c) })),
             [{ label: 'Archive', icon: 'i-lucide-archive', color: 'error' as const, onSelect: () => archive(a) }]
           ]"
         >
           <UButton icon="i-lucide-more-horizontal" size="sm" color="neutral" variant="ghost" />
+          <template #color="{ item }">
+            <span
+              class="size-4 rounded-full border-2 shrink-0"
+              :class="item.checked ? 'border-foreground' : 'border-transparent'"
+              :style="{ background: item.hex }"
+            />
+          </template>
         </UDropdownMenu>
       </li>
     </ul>
