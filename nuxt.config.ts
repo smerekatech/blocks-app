@@ -13,7 +13,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL || ''
+    databaseUrl: process.env.DATABASE_URL || '',
+    session: {
+      maxAge: 60 * 60 * 24 * 30 // 30 days
+    }
   },
 
   eslint: {

@@ -117,7 +117,7 @@ const dayTotalLabel = computed(() => {
     <div class="md:hidden">
       <DayColumn
         :date="cursor"
-        :label="formatDayFull(cursor).split(',')[0] ?? ''"
+        :label="formatWeekdayLong(cursor)"
         :dom="Number(cursor.slice(-2))"
         :is-today="cursor === today()"
         :entries="entriesFor(cursor)"

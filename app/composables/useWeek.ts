@@ -43,19 +43,23 @@ export function weekdays(startYmd: string, count = 5): Array<{ date: string, lab
   })
 }
 
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const WEEKDAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
 export function formatRange(startYmd: string, endYmd: string): string {
   const s = fromYmd(startYmd)
   const e = fromYmd(endYmd)
-  const fmt = (d: Date, withYear: boolean) => {
-    const opts: Intl.DateTimeFormatOptions = withYear
-      ? { month: 'short', day: 'numeric', year: 'numeric' }
-      : { month: 'short', day: 'numeric' }
-    return d.toLocaleDateString(undefined, opts)
-  }
   const sameYear = s.getFullYear() === e.getFullYear()
+  const fmt = (d: Date, withYear: boolean) =>
+    `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}${withYear ? ` ${d.getFullYear()}` : ''}`
   return `${fmt(s, !sameYear)} – ${fmt(e, true)}`
 }
 
 export function formatDayFull(ymd: string): string {
-  return fromYmd(ymd).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+  const d = fromYmd(ymd)
+  return `${WEEKDAYS_LONG[d.getDay()]} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
+}
+
+export function formatWeekdayLong(ymd: string): string {
+  return WEEKDAYS_LONG[fromYmd(ymd).getDay()]!
 }
