@@ -63,3 +63,44 @@ export function formatDayFull(ymd: string): string {
 export function formatWeekdayLong(ymd: string): string {
   return WEEKDAYS_LONG[fromYmd(ymd).getDay()]!
 }
+
+export function startOfMonth(ymd: string): string {
+  const d = fromYmd(ymd)
+  return toYmd(new Date(d.getFullYear(), d.getMonth(), 1))
+}
+
+export function endOfMonth(ymd: string): string {
+  const d = fromYmd(ymd)
+  return toYmd(new Date(d.getFullYear(), d.getMonth() + 1, 0))
+}
+
+export function addMonths(ymd: string, months: number): string {
+  const d = fromYmd(ymd)
+  return toYmd(new Date(d.getFullYear(), d.getMonth() + months, 1))
+}
+
+export function formatMonth(ymd: string): string {
+  const d = fromYmd(ymd)
+  const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  return `${MONTHS_LONG[d.getMonth()]} ${d.getFullYear()}`
+}
+
+export function monthGridStart(ymd: string): string {
+  return startOfWeekMonday(startOfMonth(ymd))
+}
+
+export function monthGridDays(ymd: string): Array<{ date: string, dom: number, inMonth: boolean, isToday: boolean }> {
+  const start = monthGridStart(ymd)
+  const monthIdx = fromYmd(ymd).getMonth()
+  const t = today()
+  return Array.from({ length: 42 }, (_, i) => {
+    const date = addDays(start, i)
+    const d = fromYmd(date)
+    return {
+      date,
+      dom: d.getDate(),
+      inMonth: d.getMonth() === monthIdx,
+      isToday: date === t
+    }
+  })
+}
