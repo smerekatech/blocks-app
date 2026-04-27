@@ -217,7 +217,8 @@ final class AppState {
         do {
             let result: CompleteResult = try await BlocksAPI.shared.post("/api/timer/complete")
             if let firstId = result.firstEntryId {
-                Chime.playOnce(firstEntryId: firstId, second: result.state == "completed")
+                let name = activities.first { $0.id == timer?.activityId }?.name
+                Chime.notify(firstEntryId: firstId, completed: result.state == "completed", activityName: name)
             }
             await refreshTimer()
             await refreshEntries()
