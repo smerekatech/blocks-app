@@ -1,31 +1,28 @@
 <script setup lang="ts">
-type Range = 'week' | 'month'
+type Range = 'workweek' | 'week' | 'month'
 
 const range = ref<Range>('week')
 const cursor = ref(today())
 
 const rangeItems = [
+  { label: 'Workweek', value: 'workweek' },
   { label: 'Week', value: 'week' },
   { label: 'Month', value: 'month' }
 ]
 
-function endOfMonth(ymd: string): string {
-  const d = fromYmd(ymd)
-  const e = new Date(d.getFullYear(), d.getMonth() + 1, 0)
-  return toYmd(e)
-}
-function startOfMonth(ymd: string): string {
-  const d = fromYmd(ymd)
-  return toYmd(new Date(d.getFullYear(), d.getMonth(), 1))
-}
-
-const from = computed(() => range.value === 'week' ? startOfWeekMonday(cursor.value) : startOfMonth(cursor.value))
-const to = computed(() => range.value === 'week' ? addDays(from.value, 4) : endOfMonth(cursor.value))
+const from = computed(() => {
+  if (range.value === 'month') return startOfMonth(cursor.value)
+  return startOfWeekMonday(cursor.value)
+})
+const to = computed(() => {
+  if (range.value === 'workweek') return addDays(from.value, 4)
+  if (range.value === 'week') return addDays(from.value, 6)
+  return endOfMonth(cursor.value)
+})
 
 const periodLabel = computed(() => {
-  if (range.value === 'week') return formatRange(from.value, to.value)
-  const d = fromYmd(cursor.value)
-  return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+  if (range.value === 'month') return formatMonth(cursor.value)
+  return formatRange(from.value, to.value)
 })
 
 const { data: stats } = await useAsyncData(
@@ -42,8 +39,10 @@ const bars = computed(() => {
   const list = stats.value
   if (!list) return []
   const t = today()
-  if (range.value === 'week') {
-    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+  if (range.value === 'workweek' || range.value === 'week') {
+    const names = range.value === 'workweek'
+      ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     return names.map((label, i) => {
       const date = addDays(from.value, i)
       const found = list.byDay.find(d => d.date === date)
@@ -76,18 +75,12 @@ const maxActivityBlocks = computed(() =>
 )
 
 function prev() {
-  if (range.value === 'week') cursor.value = addDays(cursor.value, -7)
-  else {
-    const d = fromYmd(cursor.value)
-    cursor.value = toYmd(new Date(d.getFullYear(), d.getMonth() - 1, 1))
-  }
+  if (range.value === 'month') cursor.value = addMonths(cursor.value, -1)
+  else cursor.value = addDays(cursor.value, -7)
 }
 function next() {
-  if (range.value === 'week') cursor.value = addDays(cursor.value, 7)
-  else {
-    const d = fromYmd(cursor.value)
-    cursor.value = toYmd(new Date(d.getFullYear(), d.getMonth() + 1, 1))
-  }
+  if (range.value === 'month') cursor.value = addMonths(cursor.value, 1)
+  else cursor.value = addDays(cursor.value, 7)
 }
 
 function fmtTotal(v: number): string {
