@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const name = computed(() => props.activity?.name ?? props.entry.name ?? 'Unknown')
-const color = computed(() => props.activity?.color ?? '#64748b')
+const color = computed(() => props.activity?.color ?? '#64748b52')
 const isHalf = computed(() => props.entry.blocks === 0.5)
 
 const rootEl = ref<HTMLElement | null>(null)
@@ -49,7 +49,7 @@ function onToggleClick() {
     ref="rootEl"
     class="group flex items-center gap-2 rounded-md border border-default px-2 text-sm"
     :class="isHalf ? 'min-h-8 py-1' : 'min-h-16 py-2'"
-    :style="{ background: color + '26' }"
+    :style="{ background: color }"
   >
     <span class="drag-handle cursor-grab text-muted shrink-0">
       <UIcon name="i-lucide-grip-vertical" class="size-3.5" />

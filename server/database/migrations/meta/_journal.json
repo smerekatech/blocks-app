@@ -15,6 +15,27 @@
       "when": 1777050726947,
       "tag": "0001_mushy_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777280183847,
+      "tag": "0002_dark_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777280380484,
+      "tag": "0003_activity_color_alpha",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777280789952,
+      "tag": "0004_glamorous_princess_powerful",
+      "breakpoints": true
     }
   ]
 }
