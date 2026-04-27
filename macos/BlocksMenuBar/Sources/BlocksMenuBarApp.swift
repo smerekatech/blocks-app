@@ -12,7 +12,9 @@ struct BlocksMenuBarApp: App {
                 .environment(delegate.state)
                 .onAppear {
                     delegate.state.popoverOpen = true
-                    Task { await delegate.state.refreshAll() }
+                    if delegate.state.isSignedIn {
+                        Task { await delegate.state.refreshAll() }
+                    }
                 }
                 .onDisappear {
                     delegate.state.popoverOpen = false

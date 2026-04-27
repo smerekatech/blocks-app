@@ -39,6 +39,7 @@ final class AppState {
     func handleAuthCallback(_ url: URL) {
         if Auth.shared.handleCallback(url) {
             isSignedIn = true
+            lastError = nil
             startPolling()
             Task { await refreshAll() }
         }

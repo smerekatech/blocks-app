@@ -12,6 +12,7 @@ final class Auth {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: BlocksConfig.keychainService,
             kSecAttrAccount as String: BlocksConfig.keychainAccount,
+            kSecUseDataProtectionKeychain as String: true,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
@@ -25,26 +26,36 @@ final class Auth {
         return value
     }
 
-    func saveCookie(_ value: String) {
+    @discardableResult
+    func saveCookie(_ value: String) -> OSStatus {
         let data = Data(value.utf8)
         let baseQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: BlocksConfig.keychainService,
-            kSecAttrAccount as String: BlocksConfig.keychainAccount
+            kSecAttrAccount as String: BlocksConfig.keychainAccount,
+            kSecUseDataProtectionKeychain as String: true
         ]
         let updateStatus = SecItemUpdate(baseQuery as CFDictionary, [kSecValueData as String: data] as CFDictionary)
+        if updateStatus == errSecSuccess { return errSecSuccess }
         if updateStatus == errSecItemNotFound {
             var addQuery = baseQuery
             addQuery[kSecValueData as String] = data
-            SecItemAdd(addQuery as CFDictionary, nil)
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            if addStatus != errSecSuccess {
+                NSLog("Auth.saveCookie SecItemAdd failed: \(addStatus)")
+            }
+            return addStatus
         }
+        NSLog("Auth.saveCookie SecItemUpdate failed: \(updateStatus)")
+        return updateStatus
     }
 
     func clearCookie() {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: BlocksConfig.keychainService,
-            kSecAttrAccount as String: BlocksConfig.keychainAccount
+            kSecAttrAccount as String: BlocksConfig.keychainAccount,
+            kSecUseDataProtectionKeychain as String: true
         ]
         SecItemDelete(query as CFDictionary)
     }
@@ -62,7 +73,7 @@ final class Auth {
               !session.isEmpty else {
             return false
         }
-        saveCookie(session)
-        return true
+        let status = saveCookie(session)
+        return status == errSecSuccess
     }
 }
