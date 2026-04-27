@@ -13,6 +13,8 @@ const archived = computed(() => activities.value.filter(a => a.archivedAt))
 
 const newName = ref('')
 const newColor = ref('#64748b26')
+const newColorPickerOpen = ref(false)
+const openColorPickerId = ref<number | null>(null)
 const creating = ref(false)
 
 async function create() {
@@ -56,11 +58,11 @@ async function unarchive(a: Activity) {
 }
 
 const PALETTE = [
-  '#6366f152', '#8b5cf652', '#a855f752', '#ec489952',
-  '#f43f5e52', '#ef444452', '#f9731652', '#f59e0b52',
-  '#eab30852', '#84cc1652', '#22c55e52', '#10b98152',
-  '#14b8a652', '#06b6d452', '#0ea5e952', '#3b82f652',
-  '#64748b52', '#78716c52'
+  '#6366f178', '#8b5cf678', '#a855f778', '#ec489978',
+  '#f43f5e78', '#ef444478', '#f9731678', '#f59e0b78',
+  '#eab30878', '#84cc1678', '#22c55e78', '#10b98178',
+  '#14b8a678', '#06b6d478', '#0ea5e978', '#3b82f678',
+  '#64748b78', '#78716c78'
 ]
 
 function toInputColor(color: string) {
@@ -68,7 +70,7 @@ function toInputColor(color: string) {
 }
 
 function fromInputColor(color: string) {
-  return color + '52'
+  return color + '78'
 }
 
 const usedColors = computed(() => new Set(active.value.map(a => a.color)))
@@ -90,7 +92,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
             :style="{ background: newColor }"
             title="Pick color"
           />
-          <template #content>
+          <template #content="{ close }">
             <div class="p-2 flex flex-wrap gap-1 w-44">
               <button
                 v-for="c in PALETTE"
@@ -99,7 +101,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
                 class="relative size-7 rounded-full border-2 transition hover:scale-110"
                 :class="newColor === c ? 'border-foreground scale-110' : 'border-transparent'"
                 :style="{ background: c }"
-                @click="newColor = c"
+                @click="newColor = c; close()"
               >
                 <span v-if="usedColors.has(c)" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span class="size-1.5 rounded-full bg-white/60" />
@@ -116,7 +118,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
                   type="color"
                   class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   :value="toInputColor(newColor)"
-                  @input="newColor = fromInputColor(($event.target as HTMLInputElement).value)"
+                  @change="newColor = fromInputColor(($event.target as HTMLInputElement).value); close()"
                 />
               </label>
             </div>
@@ -142,7 +144,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
             class="size-5 rounded-full shrink-0 transition hover:scale-110 cursor-pointer"
             :style="{ background: a.color }"
           />
-          <template #content>
+          <template #content="{ close }">
             <div class="p-2 flex flex-wrap gap-1 w-44">
               <button
                 v-for="c in PALETTE"
@@ -151,7 +153,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
                 class="relative size-7 rounded-full border-2 transition hover:scale-110"
                 :class="a.color === c ? 'border-foreground scale-110' : 'border-transparent'"
                 :style="{ background: c }"
-                @click="setColor(a, c)"
+                @click="setColor(a, c); close()"
               >
                 <span v-if="usedColors.has(c) && c !== a.color" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span class="size-1.5 rounded-full bg-white/60" />
@@ -168,7 +170,7 @@ const usedColors = computed(() => new Set(active.value.map(a => a.color)))
                   type="color"
                   class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   :value="toInputColor(a.color)"
-                  @change="setColor(a, fromInputColor(($event.target as HTMLInputElement).value))"
+                  @change="setColor(a, fromInputColor(($event.target as HTMLInputElement).value)); close()"
                 />
               </label>
             </div>
