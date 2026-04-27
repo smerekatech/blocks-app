@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+  <style>
+    .fg-fill { fill: oklch(0.6 0.18 155); }
+    .fg-stroke { stroke: oklch(0.6 0.18 155); fill: none; }
+    @media (prefers-color-scheme: dark) {
+      .fg-fill { fill: oklch(0.78 0.15 155); }
+      .fg-stroke { stroke: oklch(0.78 0.15 155); }
+    }
+  </style>
+  <rect class="fg-fill" x="2" y="3" width="16" height="6" rx="1.5" />
+  <rect class="fg-stroke" x="2" y="11" width="16" height="6" rx="1.5" stroke-width="1.6" />
+  <rect class="fg-fill" x="2" y="11" width="8" height="6" rx="1.5" />
+</svg>
