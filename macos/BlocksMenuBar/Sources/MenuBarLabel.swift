@@ -8,15 +8,21 @@ struct MenuBarLabel: View {
         case .idle:
             Image(systemName: "square.grid.2x2")
         case .running:
-            HStack(spacing: 4) {
-                Image(systemName: "timer")
+            if let activity = state.currentActivity {
+                Text("\(formatRemaining(state.remainingMs))  \(activity.name)")
+                    .monospacedDigit()
+            } else {
                 Text(formatRemaining(state.remainingMs))
-                    .font(.system(.body, design: .monospaced))
+                    .monospacedDigit()
             }
         case .awaitingChoice:
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
-                Text("Done?")
+                if let activity = state.currentActivity {
+                    Text(activity.name)
+                } else {
+                    Text("Done?")
+                }
             }
         }
     }
