@@ -11,7 +11,9 @@ const activityById = computed(() => {
 
 const tabTitle = computed(() => {
   if (mode.value !== 'running' || !timer.value) return 'Blocks'
-  const name = activityById.value.get(timer.value.activityId)?.name ?? 'Activity'
+  const name = (timer.value.activityId != null
+    ? activityById.value.get(timer.value.activityId)?.name
+    : timer.value.name) ?? 'Activity'
   const minutes = Math.ceil(remainingMs.value / 60000)
   return `${minutes} ${name} - Blocks`
 })

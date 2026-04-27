@@ -4,7 +4,8 @@ interface TimerConfig {
 }
 
 interface TimerState {
-  activityId: number
+  activityId: number | null
+  name: string | null
   startedAt: Date
   startedDate: string
   half: 1 | 2
@@ -12,7 +13,8 @@ interface TimerState {
 }
 
 interface ApiTimer {
-  activityId: number
+  activityId: number | null
+  name: string | null
   startedAt: string
   startedDate: string
   half: number
@@ -42,6 +44,7 @@ async function refresh() {
   timer.value = res.timer
     ? {
         activityId: res.timer.activityId,
+        name: res.timer.name,
         startedAt: new Date(res.timer.startedAt),
         startedDate: res.timer.startedDate,
         half: res.timer.half === 2 ? 2 : 1,
@@ -80,10 +83,10 @@ function emitEntriesChanged() {
   void nuxt.callHook('blocks:entries-changed')
 }
 
-async function start(activityId: number) {
+async function start(arg: { activityId: number } | { name: string }) {
   await $fetch('/api/timer/start', {
     method: 'POST',
-    body: { activityId, startedDate: today() }
+    body: { ...arg, startedDate: today() }
   })
   await refresh()
 }
