@@ -45,6 +45,12 @@ struct PopoverContent: View {
             }
         }
         .frame(width: 300)
+        .onChange(of: state.popoverOpen) { _, open in
+            if !open {
+                customMode = false
+                customName = ""
+            }
+        }
     }
 
     // MARK: - Sign in
