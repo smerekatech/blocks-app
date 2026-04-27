@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
 
 export default defineEventHandler(async (event) => {
@@ -28,7 +28,11 @@ export default defineEventHandler(async (event) => {
   if (hasActivityId) {
     activityId = Number(body!.activityId)
     const [activity] = await db.select({ id: schema.activities.id }).from(schema.activities)
-      .where(and(eq(schema.activities.id, activityId), eq(schema.activities.userId, userId)))
+      .where(and(
+        eq(schema.activities.id, activityId),
+        eq(schema.activities.userId, userId),
+        isNull(schema.activities.archivedAt)
+      ))
     if (!activity) throw createError({ statusCode: 404, message: 'Activity not found' })
   } else {
     name = freeformName!
