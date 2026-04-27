@@ -170,7 +170,7 @@ final class AppState {
 
     func startTimer(activityId: Int) async {
         do {
-            let _: ApiTimer = try await BlocksAPI.shared.post(
+            let _: EmptyResponse = try await BlocksAPI.shared.post(
                 "/api/timer/start",
                 body: StartBody(activityId: activityId, startedDate: Self.todayString())
             )
@@ -197,7 +197,7 @@ final class AppState {
 
     func secondHalf() async {
         do {
-            let _: ApiTimer = try await BlocksAPI.shared.post("/api/timer/second-half")
+            let _: EmptyResponse = try await BlocksAPI.shared.post("/api/timer/second-half")
             await refreshTimer()
         } catch APIError.unauthorized {
             isSignedIn = false
