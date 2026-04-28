@@ -271,9 +271,7 @@ struct PopoverContent: View {
             } label: {
                 Text("Open in browser")
                     .font(.system(size: 11))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .frame(maxWidth: 84)
+                    .lineLimit(1)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)

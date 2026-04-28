@@ -1,0 +1,1 @@
+../../modules/blocks-live-activity/ios/BlocksActivityAttributes.swift

@@ -1,0 +1,10 @@
+{
+  "name": "blocks-live-activity",
+  "version": "0.1.0",
+  "description": "Blocks iOS Live Activity bridge",
+  "main": "./index.ts",
+  "private": true,
+  "platforms": [
+    "ios"
+  ]
+}

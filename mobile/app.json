@@ -15,6 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.smerekatech.blocks.ios",
+      "appleTeamId": "V24SHXK32L",
       "supportsTablet": false,
       "infoPlist": {
         "NSSupportsLiveActivities": true
@@ -38,7 +39,16 @@
           "color": "#2E9F5C"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.1"
+          }
+        }
+      ],
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": true

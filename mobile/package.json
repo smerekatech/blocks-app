@@ -11,11 +11,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bacons/apple-targets": "^4.0.6",
     "@gorhom/bottom-sheet": "^5.2.10",
     "@shopify/flash-list": "2.0.2",
     "@tanstack/react-query": "^5.100.5",
     "expo": "~54.0.33",
     "expo-blur": "~15.0.8",
+    "expo-build-properties": "^1.0.10",
     "expo-constants": "~18.0.13",
     "expo-haptics": "~15.0.8",
     "expo-linking": "~8.0.12",

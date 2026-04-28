@@ -9,13 +9,51 @@ import {
   type CompleteTimerResult,
   type StartTimerInput,
 } from '~/api/timer';
-import type { TimerConfig, TimerEnvelope } from '~/api/types';
+import type { Activity, RunningTimer, TimerConfig, TimerEnvelope } from '~/api/types';
+import * as liveActivity from '~/notifications/liveActivity';
 import { cancelPendingCompletion, scheduleCompletion } from '~/notifications/completionAlert';
 import { queryKeys } from '~/state/queryClient';
+import { resolveSwatch } from '~/theme/swatch';
+import { BRAND } from '~/theme/tokens';
 
 function readConfig(qc: ReturnType<typeof useQueryClient>): TimerConfig | undefined {
   const env = qc.getQueryData<TimerEnvelope>(queryKeys.timer());
   return env?.config;
+}
+
+function colorHexFor(qc: ReturnType<typeof useQueryClient>, activityId: number | null): string {
+  if (activityId == null) return BRAND.accent;
+  const matches = qc.getQueriesData<Activity[]>({ queryKey: ['activities'] });
+  for (const [, list] of matches) {
+    const found = list?.find((a) => a.id === activityId);
+    if (found) return resolveSwatch(found.color).border;
+  }
+  return BRAND.accent;
+}
+
+function startLiveActivity(
+  timer: RunningTimer,
+  config: TimerConfig,
+  displayName: string,
+  colorHex: string,
+) {
+  const startedAtMs = new Date(timer.startedAt).getTime();
+  void liveActivity.start({
+    startedAtMs,
+    endsAtMs: startedAtMs + config.halfDurationMs,
+    activityName: displayName,
+    colorHex,
+    half: timer.half,
+  });
+}
+
+function updateLiveActivity(timer: RunningTimer, config: TimerConfig) {
+  const startedAtMs = new Date(timer.startedAt).getTime();
+  void liveActivity.update({
+    startedAtMs,
+    endsAtMs: startedAtMs + config.halfDurationMs,
+    half: timer.half,
+  });
 }
 
 function invalidateAfterTimerChange(qc: ReturnType<typeof useQueryClient>) {
@@ -41,6 +79,7 @@ export function useStartTimer() {
           startedAt: new Date(timer.startedAt),
           durationMs: config.halfDurationMs,
         });
+        startLiveActivity(timer, config, vars.displayName, colorHexFor(qc, timer.activityId));
       }
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       invalidateAfterTimerChange(qc);
@@ -54,6 +93,7 @@ export function useStopTimer() {
     mutationFn: stopTimer,
     async onSuccess() {
       await cancelPendingCompletion();
+      void liveActivity.end();
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       invalidateAfterTimerChange(qc);
     },
@@ -71,6 +111,7 @@ export function useCompleteTimer() {
     async onSuccess(result: CompleteTimerResult) {
       if (result.state === 'completed') {
         await cancelPendingCompletion();
+        void liveActivity.end();
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       invalidateAfterTimerChange(qc);
@@ -90,6 +131,7 @@ export function useStartSecondHalf() {
           startedAt: new Date(timer.startedAt),
           durationMs: config.halfDurationMs,
         });
+        updateLiveActivity(timer, config);
       }
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       invalidateAfterTimerChange(qc);

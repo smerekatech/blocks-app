@@ -1,0 +1,6 @@
+{
+  "type": "widget",
+  "name": "BlocksLiveActivityWidget",
+  "deploymentTarget": "16.1",
+  "frameworks": ["ActivityKit", "WidgetKit", "SwiftUI"]
+}
