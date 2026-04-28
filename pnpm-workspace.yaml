@@ -1,5 +1,6 @@
 packages:
   - '.'
+  - 'mobile'
 ignoredBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'

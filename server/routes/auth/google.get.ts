@@ -41,16 +41,22 @@ export default defineOAuthGoogleEventHandler({
       loggedInAt: Date.now()
     })
 
-    if (getCookie(event, 'menubar_auth') === '1') {
-      deleteCookie(event, 'menubar_auth')
+    const nativeAuth = getCookie(event, 'menubar_auth') === '1'
+      ? { scheme: 'blocks-menubar', cookie: 'menubar_auth', errorTag: 'menubar' }
+      : getCookie(event, 'mobile_auth') === '1'
+        ? { scheme: 'blocks-mobile', cookie: 'mobile_auth', errorTag: 'mobile' }
+        : null
+
+    if (nativeAuth) {
+      deleteCookie(event, nativeAuth.cookie)
       const raw = getResponseHeader(event, 'set-cookie')
       const headers = (Array.isArray(raw) ? raw : raw ? [raw] : []) as string[]
       const entry = headers.find(h => h.startsWith('nuxt-session='))
       if (entry) {
         const value = entry.split(';')[0]!.slice('nuxt-session='.length)
-        return sendRedirect(event, `blocks-menubar://auth/callback?session=${encodeURIComponent(value)}`)
+        return sendRedirect(event, `${nativeAuth.scheme}://auth/callback?session=${encodeURIComponent(value)}`)
       }
-      return sendRedirect(event, '/login?error=menubar')
+      return sendRedirect(event, `/login?error=${nativeAuth.errorTag}`)
     }
 
     return sendRedirect(event, '/')
