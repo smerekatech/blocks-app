@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
-import { House, BarChart3 } from 'lucide-react-native';
+import { House, BarChart3, User } from 'lucide-react-native';
 import { useTheme } from '~/theme/ThemeProvider';
 
 export default function TabsLayout() {
@@ -29,6 +29,13 @@ export default function TabsLayout() {
         options={{
           title: 'Stats',
           tabBarIcon: ({ color, size }) => <BarChart3 size={size} color={color} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} strokeWidth={2} />,
         }}
       />
     </Tabs>
