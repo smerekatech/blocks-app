@@ -7,6 +7,7 @@
     "ios": "expo run:ios",
     "android": "expo run:android",
     "prebuild": "expo prebuild",
+    "build:apk": "expo prebuild --platform android && cd android && ./gradlew :app:assembleRelease && echo 'APK: '$(pwd)'/app/build/outputs/apk/release/app-release.apk'",
     "build:palette": "tsx scripts/buildPalette.ts",
     "typecheck": "tsc --noEmit"
   },
