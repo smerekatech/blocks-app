@@ -33,3 +33,16 @@ targets:
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         GENERATE_INFOPLIST_FILE: NO
+schemes:
+  BlocksMenuBar:
+    build:
+      targets:
+        BlocksMenuBar: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
