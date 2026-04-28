@@ -14,7 +14,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.smerekatech.blocks",
+      "bundleIdentifier": "com.smerekatech.blocks.ios",
       "supportsTablet": false,
       "infoPlist": {
         "NSSupportsLiveActivities": true
