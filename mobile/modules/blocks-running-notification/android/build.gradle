@@ -1,0 +1,19 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.smerekatech.blocks'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.blocksrunningnotification"
+  defaultConfig {
+    versionCode 1
+    versionName '0.1.0'
+  }
+}
+
+dependencies {
+  api "androidx.core:core-ktx:1.13.0"
+}

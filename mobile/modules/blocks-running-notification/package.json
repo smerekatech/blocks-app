@@ -1,0 +1,10 @@
+{
+  "name": "blocks-running-notification",
+  "version": "0.1.0",
+  "description": "Blocks Android persistent timer notification bridge",
+  "main": "./index.ts",
+  "private": true,
+  "platforms": [
+    "android"
+  ]
+}

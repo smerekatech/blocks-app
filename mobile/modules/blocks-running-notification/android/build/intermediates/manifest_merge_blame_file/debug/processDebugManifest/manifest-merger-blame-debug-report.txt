@@ -1,0 +1,36 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="expo.modules.blocksrunningnotification" >
+4
+5    <uses-sdk android:minSdkVersion="24" />
+6
+7    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+7-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:2:5-77
+7-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:2:22-74
+8    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+8-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:3:5-89
+8-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:3:22-86
+9    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+9-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:4:5-77
+9-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:4:22-74
+10
+11    <application>
+11-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:6:5-15:19
+12        <service
+12-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:7:9-14:19
+13            android:name="expo.modules.blocksrunningnotification.RunningNotificationService"
+13-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:8:13-93
+14            android:exported="false"
+14-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:9:13-37
+15            android:foregroundServiceType="specialUse" >
+15-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:10:13-55
+16            <property
+16-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:11:13-13:77
+17                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+17-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:12:17-76
+18                android:value="Active timer block countdown notification" />
+18-->/Users/yury/projects/blocks/mobile/modules/blocks-running-notification/android/src/main/AndroidManifest.xml:13:17-74
+19        </service>
+20    </application>
+21
+22</manifest>

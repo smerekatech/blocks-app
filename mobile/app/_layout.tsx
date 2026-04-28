@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useActivities } from '~/hooks/useActivities';
 import { useTimer } from '~/hooks/useTimer';
 import * as liveActivity from '~/notifications/liveActivity';
+import * as runningNotification from '~/notifications/runningNotification';
 import { ThemeProvider } from '~/theme/ThemeProvider';
 import { queryClient } from '~/state/queryClient';
 import { useSessionStore } from '~/state/session';
@@ -26,7 +27,7 @@ function SessionGate() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    const inAuthFlow = segments[0] === 'login';
+    const inAuthFlow = segments[0] === 'login' || segments[0] === 'auth';
     if (status === 'signedOut' && !inAuthFlow) {
       router.replace('/login');
     } else if (status === 'signedIn' && inAuthFlow) {
@@ -37,7 +38,7 @@ function SessionGate() {
   return null;
 }
 
-function LiveActivitySync() {
+function RunningOverlaySync() {
   const status = useSessionStore((s) => s.status);
   const enabled = status === 'signedIn';
   const timerQ = useTimer();
@@ -49,20 +50,23 @@ function LiveActivitySync() {
     const config = timerQ.data?.config;
     if (!timer || !config) {
       void liveActivity.end();
+      void runningNotification.end();
       return;
     }
     const activity = activitiesQ.data?.find((a) => a.id === timer.activityId) ?? null;
     const colorHex = activity ? resolveSwatch(activity.color).border : BRAND.accent;
     const displayName = activity?.name ?? timer.name ?? 'Block';
     const startedAtMs = new Date(timer.startedAt).getTime();
-
-    void liveActivity.start({
+    const args = {
       startedAtMs,
       endsAtMs: startedAtMs + config.halfDurationMs,
       activityName: displayName,
       colorHex,
       half: timer.half,
-    });
+    };
+
+    void liveActivity.start(args);
+    void runningNotification.start(args);
   }, [enabled, timerQ.data, activitiesQ.data]);
 
   return null;
@@ -75,7 +79,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <SessionGate />
-            <LiveActivitySync />
+            <RunningOverlaySync />
             <StatusBar style="auto" />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="login" />
