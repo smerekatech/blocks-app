@@ -13,6 +13,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm db:migrate` — apply migrations against `DATABASE_URL` (production servers don't need this; the Nitro plugin runs migrations on boot)
 - `pnpm deploy` — `./deploy.sh`: SSHes to the prod box and runs `git pull && pnpm install && pnpm build && pm2 reload ecosystem.config.cjs --update-env`. Use `pm2 reload ecosystem.config.cjs --update-env` (not `restart`) so PM2 picks up changed `.env` values.
 - `pnpm mac:install` — builds and installs the macOS menubar companion to `/Applications/BlocksMenuBar.app` (runs `macos/BlocksMenuBar/install.sh`; requires `xcodegen`).
+- `cd mobile && pnpm typecheck` — `tsc --noEmit` for the mobile app. Root `pnpm typecheck` does **not** cover mobile.
+- `cd mobile && pnpm build:palette` — regenerate `src/theme/palette.generated.ts` from `shared/palette.ts`. Re-run after editing the shared palette.
+- `cd mobile && pnpm ios` / `pnpm android` — build & launch on simulator/device. See `mobile/README.md` for backend overrides via `EXPO_PUBLIC_API_BASE_URL`.
 
 There is no test runner configured.
 
@@ -54,6 +57,18 @@ The mobile and macOS clients reuse the same sealed `nuxt-session` cookie via dee
 
 Migrations run automatically on server boot via `server/plugins/migrate.ts` (a Nitro plugin pointing at `server/database/migrations`). The dev workflow is: edit `schema.ts` → `pnpm db:generate` → restart dev server (migration applies on next boot).
 
+### Mobile (`mobile/`)
+
+Expo (React Native) with Expo Router (`mobile/app/`, file-based) on top of `mobile/src/` (api/hooks/components/state/theme).
+
+- **Path alias `~/` points to `mobile/src/`** here, **not** `app/` like in the web target — same alias, different meaning per workspace. `~shared/*` reaches `shared/`.
+- Server data via TanStack Query (`mobile/src/state/queryClient.ts`); local UI state via Zustand. No SWR / `useFetch`.
+- Auth: sealed `nuxt-session` cookie stored in `expo-secure-store` and injected by `mobile/src/api/client.ts` on every request — same handoff flow as the macOS app.
+- Native Expo modules live in `mobile/modules/`:
+  - `blocks-live-activity` — iOS Live Activity for the running timer.
+  - `blocks-running-notification` — Android persistent foreground-service notification.
+- Run `cd mobile && pnpm build:palette` whenever `shared/palette.ts` changes — regenerates `src/theme/palette.generated.ts`.
+
 ### Frontend
 
 - `app/pages/index.vue` is the main calendar view; it picks day/workweek/week/month layouts from `useViewMode()` (cookie-persisted) and breakpoints. Mobile is always day view.
@@ -64,7 +79,8 @@ Migrations run automatically on server boot via `server/plugins/migrate.ts` (a N
 
 ### Conventions
 
-- Path aliases: `~/` → `app/`, `~~/` → repo root. Use `~~/server/...` from server code, `~/composables/...` from app code.
+- Path aliases (web): `~/` → `app/`, `~~/` → repo root. Use `~~/server/...` from server code, `~/composables/...` from app code.
+- Path aliases (mobile): `~/` → `mobile/src/`, `~shared/*` → `shared/*`. **Same `~/` token, different target per workspace** — don't assume web aliases work in mobile and vice versa.
 - `defineEventHandler`, `useDb`, `requireUserId`, `defineNuxtRouteMiddleware`, etc. are auto-imported by Nuxt — don't add explicit imports for them.
 - Tailwind v4 + `@nuxt/ui` v4 for all components; icons via `@iconify-json/lucide` (`i-lucide-*`).
 
