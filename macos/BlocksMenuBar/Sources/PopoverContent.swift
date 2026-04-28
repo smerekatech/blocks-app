@@ -3,8 +3,11 @@ import AppKit
 
 struct PopoverContent: View {
     @Environment(AppState.self) private var state
+    @Environment(\.colorScheme) private var colorScheme
     @State private var customMode = false
     @State private var customName = ""
+
+    private var dark: Bool { colorScheme == .dark }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -137,7 +140,7 @@ struct PopoverContent: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Circle()
-                    .fill(Color(hex: state.currentActivity?.color ?? "#10b981"))
+                    .fill(Color.activityDot(state.currentActivity?.color, dark: dark))
                     .frame(width: 10, height: 10)
                 Text(state.currentLabel)
                     .font(.system(size: 14, weight: .semibold))
@@ -147,7 +150,7 @@ struct PopoverContent: View {
             HStack(spacing: 14) {
                 ProgressRing(
                     fraction: remainingFraction,
-                    color: Color(hex: state.currentActivity?.color ?? "#10b981")
+                    color: Color.activityDot(state.currentActivity?.color, dark: dark)
                 )
                 .frame(width: 50, height: 50)
 
@@ -182,7 +185,7 @@ struct PopoverContent: View {
             HStack(alignment: .center, spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(Color(hex: state.currentActivity?.color ?? "#10b981"))
+                        .fill(Color.activityDot(state.currentActivity?.color, dark: dark))
                         .frame(width: 36, height: 36)
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
@@ -249,7 +252,7 @@ struct PopoverContent: View {
                         let activity = state.activities.first { $0.id == entry.activityId }
                         HStack(spacing: 10) {
                             Circle()
-                                .fill(activity.map { Color(hex: $0.color) } ?? Color.gray)
+                                .fill(Color.activityDot(activity?.color, dark: dark))
                                 .frame(width: 8, height: 8)
                             Text(activity?.name ?? entry.name ?? "—")
                                 .font(.system(size: 13))
@@ -343,13 +346,14 @@ struct PopoverContent: View {
 private struct ActivityRow: View {
     let activity: Activity
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     @State private var hovered = false
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Circle()
-                    .fill(Color(hex: activity.color))
+                    .fill(Color.activityDot(activity.color, dark: colorScheme == .dark))
                     .frame(width: 8, height: 8)
                 Text(activity.name)
                     .font(.system(size: 13, weight: .medium))
@@ -418,29 +422,3 @@ private struct ProgressRing: View {
     }
 }
 
-// MARK: - Color hex helper
-
-extension Color {
-    init(hex: String) {
-        var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        if s.hasPrefix("#") { s.removeFirst() }
-        var rgba: UInt64 = 0
-        Scanner(string: s).scanHexInt64(&rgba)
-        let r, g, b, a: Double
-        switch s.count {
-        case 6:
-            r = Double((rgba & 0xFF0000) >> 16) / 255
-            g = Double((rgba & 0x00FF00) >> 8) / 255
-            b = Double(rgba & 0x0000FF) / 255
-            a = 1
-        case 8:
-            r = Double((rgba & 0xFF000000) >> 24) / 255
-            g = Double((rgba & 0x00FF0000) >> 16) / 255
-            b = Double((rgba & 0x0000FF00) >> 8) / 255
-            a = Double(rgba & 0x000000FF) / 255
-        default:
-            r = 0.5; g = 0.5; b = 0.5; a = 1
-        }
-        self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
-    }
-}

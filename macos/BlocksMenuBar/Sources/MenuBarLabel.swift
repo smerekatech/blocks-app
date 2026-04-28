@@ -3,6 +3,9 @@ import SwiftUI
 
 struct MenuBarLabel: View {
     @Environment(AppState.self) private var state
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var dark: Bool { colorScheme == .dark }
 
     var body: some View {
         switch state.mode {
@@ -11,16 +14,15 @@ struct MenuBarLabel: View {
         case .running:
             HStack(spacing: 5) {
                 Circle()
-                    .fill(Color(hex: state.currentActivity?.color ?? "#10b981"))
+                    .fill(Color.activityDot(state.currentActivity?.color, dark: dark))
                     .frame(width: 7, height: 7)
-                Text(state.currentLabel)
-                Text(formatRemaining(state.remainingMs))
+                Text("\(state.currentLabel) · \(formatRemaining(state.remainingMs))")
                     .monospacedDigit()
             }
         case .awaitingChoice:
             HStack(spacing: 5) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(Color(hex: state.currentActivity?.color ?? "#10b981"))
+                    .foregroundStyle(Color.activityDot(state.currentActivity?.color, dark: dark))
                 Text(state.currentLabel)
             }
         }
