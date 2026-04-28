@@ -222,14 +222,6 @@ struct PopoverContent: View {
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
 
-                Button {
-                    Task { await state.stopTimer() }
-                } label: {
-                    Text("Skip")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
             }
         }
     }

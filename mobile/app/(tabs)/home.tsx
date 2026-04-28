@@ -10,12 +10,14 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
 
 import { signOut } from '~/api/auth';
 import type { Activity, Entry } from '~/api/types';
+import { AwaitingChoiceBar } from '~/components/AwaitingChoiceBar';
 import { FAB } from '~/components/FAB';
 import { HomeDayPage } from '~/components/HomeDayPage';
 import { RunningBar } from '~/components/RunningBar';
 import { RunningBarSheet } from '~/components/RunningBarSheet';
 import { useActivities } from '~/hooks/useActivities';
 import { useTimer } from '~/hooks/useTimer';
+import { useStartSecondHalf, useStopTimer } from '~/hooks/useTimerMutations';
 import { useToday } from '~/hooks/useToday';
 import { addDays } from '~/lib/dateRange';
 import { useTheme } from '~/theme/ThemeProvider';
@@ -67,6 +69,10 @@ export default function HomeScreen() {
   const config = timerQ.data?.config;
   const runningActivity =
     timer?.activityId != null ? activitiesById.get(timer.activityId) ?? null : null;
+  const isAwaitingChoice = timer != null && timer.half === 1 && timer.firstEntryId != null;
+
+  const stopMut = useStopTimer();
+  const secondHalfMut = useStartSecondHalf();
 
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -130,15 +136,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.bg }]} edges={['top']}>
-      {timer && config && (
-        <RunningBar
-          timer={timer}
-          config={config}
-          activity={runningActivity}
-          onTap={() => setSheetOpen(true)}
-        />
-      )}
-
       <View style={styles.header}>
         <Pressable
           onPress={goBack}
@@ -213,6 +210,32 @@ export default function HomeScreen() {
           </View>
         ))}
       </PagerView>
+
+      {timer && config && isAwaitingChoice && (
+        <AwaitingChoiceBar
+          timer={timer}
+          activity={runningActivity}
+          onStartNext={() => {
+            const displayName = runningActivity?.name ?? timer.name ?? 'Block';
+            secondHalfMut.mutate({ displayName });
+          }}
+          onStartAnother={() => {
+            stopMut.mutate(undefined, {
+              onSuccess: () => {
+                router.push({ pathname: '/pickers/picker', params: { mode: 'start' } });
+              },
+            });
+          }}
+        />
+      )}
+      {timer && config && !isAwaitingChoice && (
+        <RunningBar
+          timer={timer}
+          config={config}
+          activity={runningActivity}
+          onTap={() => setSheetOpen(true)}
+        />
+      )}
 
       <FAB
         label="Add"
