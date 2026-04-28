@@ -9,14 +9,8 @@ import { useToday } from '~/hooks/useToday';
 import { bucketByDay, dateRange, type RangeKind } from '~/lib/dateRange';
 import { useTheme } from '~/theme/ThemeProvider';
 
-const HALF_DURATION_MIN = 45;
-
-function formatTotalDuration(blocks: number): string {
-  const minutes = Math.round(blocks * 2 * HALF_DURATION_MIN);
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+function formatBlocks(v: number): string {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
 export default function StatsScreen() {
@@ -46,10 +40,7 @@ export default function StatsScreen() {
             {kind === 'week' ? 'This week' : kind === 'month' ? 'This month' : 'This year'}
           </Text>
           <Text style={[styles.totalValue, { color: tokens.text }]}>
-            {data ? formatTotalDuration(data.total) : isLoading ? '—' : '0 min'}
-          </Text>
-          <Text style={[styles.totalSub, { color: tokens.textTertiary }]}>
-            {data ? `${data.total.toFixed(1)} blocks` : ''}
+            {data ? `${formatBlocks(data.total)} ${data.total === 1 ? 'block' : 'blocks'}` : isLoading ? '—' : '0 blocks'}
           </Text>
         </View>
 
@@ -106,7 +97,6 @@ const styles = StyleSheet.create({
   totalCard: { padding: 20, borderRadius: 14, gap: 4 },
   totalLabel: { fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.6 },
   totalValue: { fontSize: 32, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  totalSub: { fontSize: 13 },
   section: { gap: 12 },
   sectionTitle: { fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: '500' },
 });

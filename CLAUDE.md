@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm db:generate` — Drizzle Kit generates a new migration from `server/database/schema.ts` into `server/database/migrations/`. **Never hand-write migration files; always use this command.**
 - `pnpm db:migrate` — apply migrations against `DATABASE_URL` (production servers don't need this; the Nitro plugin runs migrations on boot)
 - `pnpm deploy` — `./deploy.sh`: SSHes to the prod box and runs `git pull && pnpm install && pnpm build && pm2 reload ecosystem.config.cjs --update-env`. Use `pm2 reload ecosystem.config.cjs --update-env` (not `restart`) so PM2 picks up changed `.env` values.
+- `pnpm mac:install` — builds and installs the macOS menubar companion to `/Applications/BlocksMenuBar.app` (runs `macos/BlocksMenuBar/install.sh`; requires `xcodegen`).
 
 There is no test runner configured.
 
@@ -21,7 +22,13 @@ Set `NUXT_DEV_AUTO_LOGIN=1` and hit `/api/_dev/login?email=…&name=…&redirect
 
 ## Architecture
 
-Nuxt 4 monolith: SPA frontend (`app/`) + Nitro server routes (`server/`) backed by PostgreSQL via Drizzle ORM (`postgres-js` driver).
+pnpm workspace (`pnpm-workspace.yaml`) with three targets that share one Postgres backend:
+
+- **Web (`./`)** — Nuxt 4 SPA (`app/`) + Nitro server routes (`server/`), Drizzle ORM (`postgres-js`). The "monolith" referenced throughout the rest of this doc.
+- **Mobile (`mobile/`)** — Expo React Native client. See `mobile/README.md` for run/auth details.
+- **macOS menubar (`macos/BlocksMenuBar/`)** — Swift menubar companion (xcodegen-driven, no Dock icon). See `macos/BlocksMenuBar/README.md`.
+
+`shared/` is consumed by all three targets — `auth.d.ts` (Nuxt session shape), `chime.ts`, and `palette.ts` (the source of truth for activity colors; mobile regenerates `src/theme/palette.generated.ts` from it via `pnpm build:palette`, and the macOS app has its own hand-mirrored `Sources/Palette.swift`).
 
 ### Data model (`server/database/schema.ts`)
 
@@ -38,6 +45,8 @@ The "either activity or freeform name" pattern is load-bearing — `stats.get.ts
 Session-based via `nuxt-auth-utils`. `app/middleware/auth.global.ts` redirects unauthenticated users to `/login` (and authenticated users away from `/login`). Server endpoints call `requireUserId(event)` from `server/utils/session.ts` — every query is scoped by `userId`. The Google OAuth callback at `server/routes/auth/google.get.ts` upserts the user row, seeds default activities for new users (`server/utils/seed.ts`), and sets the session.
 
 The `User` and `UserSession` shapes are augmented in `shared/auth.d.ts` (module declaration for `#auth-utils`).
+
+The mobile and macOS clients reuse the same sealed `nuxt-session` cookie via deep-link handoff: server routes `/auth/mobile-start` and `/auth/menubar-start` set a short-lived marker cookie before Google OAuth, and the callback at `server/routes/auth/google.get.ts` redirects to `blocks-mobile://` / `blocks-menubar://` with the sealed session value, which the client stores in Keychain/SecureStore and sends as `Cookie: nuxt-session=…` on every request. Touch this flow carefully — three clients depend on it.
 
 ### DB client and migrations
 

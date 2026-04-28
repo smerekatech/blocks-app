@@ -8,19 +8,14 @@ interface Props {
   rows: StatsByActivity[];
 }
 
-const HALF_DURATION_MIN = 45;
-
-function formatDuration(blocks: number): string {
-  const minutes = Math.round(blocks * 2 * HALF_DURATION_MIN);
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+function formatBlocks(v: number): string {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
 export function StatsBars({ rows }: Props) {
   const { tokens, scheme } = useTheme();
   const max = Math.max(1, ...rows.map((r) => r.blocks));
+  const total = rows.reduce((sum, r) => sum + r.blocks, 0);
 
   if (rows.length === 0) {
     return (
@@ -45,8 +40,13 @@ export function StatsBars({ rows }: Props) {
                 <Text style={[styles.name, { color: tokens.text }]} numberOfLines={1}>
                   {row.name}
                 </Text>
-                <Text style={[styles.duration, { color: tokens.textSecondary }]}>
-                  {formatDuration(row.blocks)}
+                <Text style={styles.duration}>
+                  <Text style={{ color: tokens.text, fontWeight: '600' }}>
+                    {formatBlocks(row.blocks)}
+                  </Text>
+                  <Text style={{ color: tokens.textTertiary }}>
+                    {total > 0 ? `  ${Math.round((row.blocks / total) * 100)}%` : ''}
+                  </Text>
                 </Text>
               </View>
               <View style={[styles.barTrack, { backgroundColor: tint }]}>
