@@ -1,6 +1,6 @@
 # Blocks — Mobile
 
-React Native (Expo) companion to the Blocks web app. Syncs with the existing Nuxt API at `https://blocks.smerekatech.com` via the same `nuxt-session` cookie used by web and the macOS menubar app.
+React Native (Expo) companion to the Blocks web app. Syncs with the existing Nuxt API at `https://blocks.smerekalabs.com` via the same `nuxt-session` cookie used by web and the macOS menubar app.
 
 ## Run on iOS Simulator
 

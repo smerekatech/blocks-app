@@ -8,7 +8,7 @@ function resolveBaseUrl(): string {
   if (fromExtras) return fromExtras;
   const fromEnv = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (fromEnv) return fromEnv;
-  return 'https://blocks.smerekatech.com';
+  return 'https://blocks.smerekalabs.com';
 }
 
 export const API_BASE_URL = resolveBaseUrl();
