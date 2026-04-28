@@ -25,7 +25,7 @@ function SessionGate() {
     if (status === 'signedOut' && !inAuthFlow) {
       router.replace('/login');
     } else if (status === 'signedIn' && inAuthFlow) {
-      router.replace('/(tabs)/today');
+      router.replace('/(tabs)/home');
     }
   }, [status, segments, router]);
 
@@ -44,7 +44,7 @@ export default function RootLayout() {
               <Stack.Screen name="login" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen
-                name="pickers/start"
+                name="pickers/picker"
                 options={{ presentation: 'modal', headerShown: false }}
               />
               <Stack.Screen

@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { BRAND } from '~/theme/tokens';
@@ -5,10 +6,13 @@ import { BRAND } from '~/theme/tokens';
 interface Props {
   label?: string;
   onPress: () => void;
+  /** Override the default plus icon. */
+  icon?: ReactNode;
 }
 
-export function FAB({ label = 'Start', onPress }: Props) {
+export function FAB({ label = 'Start', onPress, icon }: Props) {
   const isIos = Platform.OS === 'ios';
+  const iconNode = icon ?? <DefaultPlus isIos={isIos} />;
   return (
     <Pressable
       onPress={onPress}
@@ -22,14 +26,7 @@ export function FAB({ label = 'Start', onPress }: Props) {
         },
       ]}
     >
-      <Svg width={isIos ? 18 : 20} height={isIos ? 18 : 20} viewBox="0 0 20 20">
-        <Path
-          d="M10 3v14M3 10h14"
-          stroke={isIos ? '#FFFFFF' : '#0F4F2A'}
-          strokeWidth={2.5}
-          strokeLinecap="round"
-        />
-      </Svg>
+      {iconNode}
       <Text
         style={[
           styles.label,
@@ -44,6 +41,19 @@ export function FAB({ label = 'Start', onPress }: Props) {
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+function DefaultPlus({ isIos }: { isIos: boolean }) {
+  return (
+    <Svg width={isIos ? 18 : 20} height={isIos ? 18 : 20} viewBox="0 0 20 20">
+      <Path
+        d="M10 3v14M3 10h14"
+        stroke={isIos ? '#FFFFFF' : '#0F4F2A'}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+    </Svg>
   );
 }
 

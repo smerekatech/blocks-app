@@ -1,6 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteEntry, patchEntry, type PatchEntryInput } from '~/api/entries';
+import { createEntry, deleteEntry, patchEntry, type CreateEntryInput, type PatchEntryInput } from '~/api/entries';
 import type { Entry } from '~/api/types';
+
+export function useCreateEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateEntryInput) => createEntry(input),
+    onSettled() {
+      void qc.invalidateQueries({ queryKey: ['entries'] });
+      void qc.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
 
 interface PatchVars {
   id: number;

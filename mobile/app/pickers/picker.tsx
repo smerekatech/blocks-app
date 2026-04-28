@@ -9,29 +9,38 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 
 import type { Activity } from '~/api/types';
 import { useActivities } from '~/hooks/useActivities';
+import { useCreateEntry } from '~/hooks/useEntryMutations';
 import { useStartTimer } from '~/hooks/useTimerMutations';
+import { useToday } from '~/hooks/useToday';
 import { resolveSwatch } from '~/theme/swatch';
 import { useTheme } from '~/theme/ThemeProvider';
 
-function todayString(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+type Mode = 'start' | 'add';
 
-export default function StartPickerScreen() {
+export default function PickerScreen() {
   const { tokens, scheme } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ mode?: string; date?: string }>();
+  const mode: Mode = params.mode === 'add' ? 'add' : 'start';
+
+  const today = useToday();
+  const targetDate = params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : today;
+
   const { data: activities = [], isLoading } = useActivities();
   const startMut = useStartTimer();
+  const createMut = useCreateEntry();
+  const isPending = mode === 'start' ? startMut.isPending : createMut.isPending;
+
   const [search, setSearch] = useState('');
   const [freeformMode, setFreeformMode] = useState(false);
   const [freeformText, setFreeformText] = useState('');
+  const [blocks, setBlocks] = useState<0.5 | 1>(1);
 
   const filtered = search
     ? activities.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
@@ -42,33 +51,47 @@ export default function StartPickerScreen() {
   }
 
   async function startWithActivity(activity: Activity) {
-    if (startMut.isPending) return;
+    if (isPending) return;
     try {
-      await startMut.mutateAsync({
-        activityId: activity.id,
-        startedDate: todayString(),
-        displayName: activity.name,
-      });
+      if (mode === 'start') {
+        await startMut.mutateAsync({
+          activityId: activity.id,
+          startedDate: targetDate,
+          displayName: activity.name,
+        });
+      } else {
+        await createMut.mutateAsync({
+          activityId: activity.id,
+          date: targetDate,
+          blocks,
+        });
+      }
       close();
     } catch (err) {
-      Alert.alert('Could not start', err instanceof Error ? err.message : String(err));
+      Alert.alert(errorTitle(mode), err instanceof Error ? err.message : String(err));
     }
   }
 
   async function startFreeform() {
     const name = freeformText.trim();
-    if (!name || startMut.isPending) return;
+    if (!name || isPending) return;
     try {
-      await startMut.mutateAsync({
-        name,
-        startedDate: todayString(),
-        displayName: name,
-      });
+      if (mode === 'start') {
+        await startMut.mutateAsync({
+          name,
+          startedDate: targetDate,
+          displayName: name,
+        });
+      } else {
+        await createMut.mutateAsync({ name, date: targetDate, blocks });
+      }
       close();
     } catch (err) {
-      Alert.alert('Could not start', err instanceof Error ? err.message : String(err));
+      Alert.alert(errorTitle(mode), err instanceof Error ? err.message : String(err));
     }
   }
+
+  const title = mode === 'start' ? 'Start a block' : 'Add a block';
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.bg }]} edges={['top', 'bottom']}>
@@ -82,9 +105,13 @@ export default function StartPickerScreen() {
           <Pressable onPress={close} hitSlop={8}>
             <Text style={[styles.headerAction, { color: tokens.accent }]}>Cancel</Text>
           </Pressable>
-          <Text style={[styles.headerTitle, { color: tokens.text }]}>Start a block</Text>
+          <Text style={[styles.headerTitle, { color: tokens.text }]}>{title}</Text>
           <View style={{ width: 60 }} />
         </View>
+
+        {mode === 'add' && (
+          <SegmentedHalfFull value={blocks} onChange={setBlocks} />
+        )}
 
         {!freeformMode && (
           <View style={[styles.searchWrap, { backgroundColor: tokens.surfaceMuted }]}>
@@ -118,17 +145,17 @@ export default function StartPickerScreen() {
             />
             <Pressable
               onPress={startFreeform}
-              disabled={!freeformText.trim() || startMut.isPending}
+              disabled={!freeformText.trim() || isPending}
               style={({ pressed }) => [
                 styles.primaryButton,
                 {
                   backgroundColor: tokens.accent,
-                  opacity: !freeformText.trim() || startMut.isPending || pressed ? 0.7 : 1,
+                  opacity: !freeformText.trim() || isPending || pressed ? 0.7 : 1,
                 },
               ]}
             >
               <Text style={styles.primaryButtonText}>
-                {startMut.isPending ? 'Starting…' : 'Start'}
+                {isPending ? '…' : mode === 'start' ? 'Start' : 'Add'}
               </Text>
             </Pressable>
             <Pressable onPress={() => setFreeformMode(false)} style={styles.secondaryButton}>
@@ -160,7 +187,9 @@ export default function StartPickerScreen() {
               );
             }}
             ItemSeparatorComponent={() => (
-              <View style={[styles.separator, { backgroundColor: tokens.separator, marginLeft: 60 }]} />
+              <View
+                style={[styles.separator, { backgroundColor: tokens.separator, marginLeft: 60 }]}
+              />
             )}
             ListEmptyComponent={
               isLoading ? null : (
@@ -173,13 +202,63 @@ export default function StartPickerScreen() {
             }
             ListFooterComponent={
               <Pressable onPress={() => setFreeformMode(true)} style={styles.freeformLink}>
-                <Text style={{ color: tokens.accent, fontSize: 15 }}>Start freeform…</Text>
+                <Text style={{ color: tokens.accent, fontSize: 15 }}>
+                  {mode === 'start' ? 'Start freeform…' : 'Add freeform…'}
+                </Text>
               </Pressable>
             }
           />
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+function errorTitle(mode: Mode): string {
+  return mode === 'start' ? 'Could not start' : 'Could not add';
+}
+
+function SegmentedHalfFull({
+  value,
+  onChange,
+}: {
+  value: 0.5 | 1;
+  onChange: (next: 0.5 | 1) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <View style={[styles.segWrap, { backgroundColor: tokens.surfaceMuted }]}>
+      <SegBtn label="½ block" active={value === 0.5} onPress={() => onChange(0.5)} />
+      <SegBtn label="1 block" active={value === 1} onPress={() => onChange(1)} />
+    </View>
+  );
+}
+
+function SegBtn({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.seg, active && { backgroundColor: tokens.surface }]}
+    >
+      <Text
+        style={{
+          fontSize: 15,
+          fontWeight: active ? '600' : '500',
+          color: active ? tokens.text : tokens.textSecondary,
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -203,6 +282,20 @@ const styles = StyleSheet.create({
   },
   headerAction: { fontSize: 17 },
   headerTitle: { fontSize: 17, fontWeight: '600' },
+  segWrap: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    padding: 2,
+  },
+  seg: {
+    flex: 1,
+    height: 36,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   searchWrap: {
     marginHorizontal: 16,
     paddingHorizontal: 12,

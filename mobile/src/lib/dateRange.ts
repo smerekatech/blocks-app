@@ -8,6 +8,14 @@ function ymd(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** Adds (or subtracts) `days` from a YYYY-MM-DD string and returns the new YYYY-MM-DD. */
+export function addDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y!, m! - 1, d!);
+  date.setDate(date.getDate() + days);
+  return ymd(date);
+}
+
 /** Returns start (inclusive) and end (inclusive) of the requested range, anchored on `today`. */
 export function dateRange(today: string, kind: RangeKind): { from: string; to: string } {
   const [y, m, d] = today.split('-').map(Number);

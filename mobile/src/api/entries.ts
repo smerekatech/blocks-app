@@ -5,6 +5,17 @@ export function listEntries(range: { from: string; to: string }): Promise<Entry[
   return apiFetch<Entry[]>('/api/entries', { query: range });
 }
 
+export interface CreateEntryInput {
+  activityId?: number;
+  name?: string;
+  date: string;
+  blocks: 0.5 | 1;
+}
+
+export function createEntry(input: CreateEntryInput): Promise<Entry> {
+  return apiFetch<Entry>('/api/entries', { method: 'POST', body: input });
+}
+
 export interface PatchEntryInput {
   blocks?: 0.5 | 1;
   position?: number;
