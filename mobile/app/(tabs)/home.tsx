@@ -115,7 +115,10 @@ export default function HomeScreen() {
 
   const onEdit = useCallback(
     (entry: Entry) => {
-      router.push({ pathname: '/pickers/edit', params: { entryId: String(entry.id) } });
+      router.push({
+        pathname: '/pickers/edit',
+        params: { entryId: String(entry.id), date: entry.date },
+      });
     },
     [router],
   );
@@ -156,6 +159,14 @@ export default function HomeScreen() {
           </Text>
         </Pressable>
 
+        <View style={styles.countSlot}>
+          {blocksSum > 0 && (
+            <Text style={[styles.blockCount, { color: tokens.textSecondary }]}>
+              {blocksSum % 1 === 0 ? blocksSum : blocksSum.toFixed(1)}
+            </Text>
+          )}
+        </View>
+
         <Pressable
           onPress={goForward}
           hitSlop={10}
@@ -167,14 +178,6 @@ export default function HomeScreen() {
         >
           <ChevronRight size={28} color={tokens.text} strokeWidth={2} />
         </Pressable>
-
-        <View style={styles.countSlot}>
-          {blocksSum > 0 && (
-            <Text style={[styles.blockCount, { color: tokens.textSecondary }]}>
-              {blocksSum % 1 === 0 ? blocksSum : blocksSum.toFixed(1)}
-            </Text>
-          )}
-        </View>
       </View>
 
       <PagerView

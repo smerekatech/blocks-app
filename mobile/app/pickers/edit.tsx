@@ -24,11 +24,12 @@ import { useTheme } from '~/theme/ThemeProvider';
 export default function EditPickerScreen() {
   const { tokens, scheme } = useTheme();
   const router = useRouter();
-  const { entryId } = useLocalSearchParams<{ entryId: string }>();
+  const { entryId, date: dateParam } = useLocalSearchParams<{ entryId: string; date?: string }>();
   const id = Number(entryId);
 
   const today = useToday();
-  const range = useMemo(() => ({ from: today, to: today }), [today]);
+  const date = dateParam ?? today;
+  const range = useMemo(() => ({ from: date, to: date }), [date]);
   const entriesQ = useEntries(range);
   const entry = useMemo<Entry | undefined>(
     () => entriesQ.data?.find((e) => e.id === id),
