@@ -20,6 +20,7 @@ import { useStartSecondHalf, useStopTimer } from '~/hooks/useTimerMutations';
 import { useToday } from '~/hooks/useToday';
 import { addDays } from '~/lib/dateRange';
 import { useTheme } from '~/theme/ThemeProvider';
+import { BRAND } from '~/theme/tokens';
 
 function dateTitle(date: string, today: string): string {
   if (date === today) return 'Today';
@@ -202,6 +203,18 @@ export default function HomeScreen() {
         ))}
       </PagerView>
 
+      {!timer && (
+        <Pressable
+          onPress={() => router.push({ pathname: '/pickers/picker', params: { mode: 'start' } })}
+          style={({ pressed }) => [
+            styles.fab,
+            { bottom: 16 + insets.bottom, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Text style={styles.fabText}>Start</Text>
+        </Pressable>
+      )}
+
       {timer && config && isAwaitingChoice && (
         <AwaitingChoiceBar
           timer={timer}
@@ -259,4 +272,20 @@ const styles = StyleSheet.create({
   blockCount: { fontSize: 17, fontWeight: '600' },
   pager: { flex: 1 },
   page: { flex: 1 },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    width: 72,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: BRAND.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  fabText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
 });
