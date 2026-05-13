@@ -1,6 +1,6 @@
-import { and, eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
-import { HALF_DURATION_MS, elapsedMs } from '~~/server/utils/timer'
+import { HALF_DURATION_MS, elapsedMs, finalizeAndStop, promoteHalfOne } from '~~/server/utils/timer'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
@@ -16,27 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (row.half === 1) {
-    let firstEntryId = row.firstEntryId
-    if (firstEntryId == null) {
-      const [next] = await db.select({ m: sql<number>`COALESCE(MAX(${schema.entries.position}), -1)` })
-        .from(schema.entries)
-        .where(and(eq(schema.entries.userId, userId), eq(schema.entries.date, row.startedDate)))
-      const position = (Number(next?.m ?? -1)) + 1
-
-      const [entry] = await db.insert(schema.entries).values({
-        userId,
-        activityId: row.activityId,
-        name: row.name,
-        date: row.startedDate,
-        blocks: 0.5,
-        position
-      }).returning({ id: schema.entries.id })
-      firstEntryId = entry!.id
-
-      await db.update(schema.runningTimers).set({ firstEntryId })
-        .where(eq(schema.runningTimers.id, row.id))
-    }
-
+    const firstEntryId = await promoteHalfOne(db, row)
     return {
       state: 'awaiting-choice' as const,
       firstEntryId,
@@ -45,12 +25,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  if (row.firstEntryId != null) {
-    await db.update(schema.entries).set({ blocks: 1 })
-      .where(and(eq(schema.entries.id, row.firstEntryId), eq(schema.entries.userId, userId)))
-  }
-  await db.delete(schema.runningTimers).where(eq(schema.runningTimers.id, row.id))
-
+  await finalizeAndStop(db, row)
   return {
     state: 'completed' as const,
     firstEntryId: row.firstEntryId

@@ -24,5 +24,15 @@ export default defineNuxtConfig({
     config: {
       stylistic: { commaDangle: 'never', braceStyle: '1tbs' }
     }
+  },
+
+  nitro: {
+    experimental: {
+      tasks: true
+    },
+    scheduledTasks: {
+      // Every minute — tick is idempotent and only touches rows past their 45m mark.
+      '* * * * *': ['timers:tick']
+    }
   }
 })
