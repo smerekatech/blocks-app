@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import type { AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useActivities } from '~/hooks/useActivities';
 import { useTimer } from '~/hooks/useTimer';
+import { useCompleteTimer } from '~/hooks/useTimerMutations';
 import * as liveActivity from '~/notifications/liveActivity';
 import * as runningNotification from '~/notifications/runningNotification';
 import { ThemeProvider } from '~/theme/ThemeProvider';
@@ -37,6 +38,51 @@ function SessionGate() {
       router.replace('/(tabs)/home');
     }
   }, [status, segments, router]);
+
+  return null;
+}
+
+/**
+ * Mirrors the web's auto-complete: when a running timer crosses its
+ * half-duration mark, fire /timer/complete so the UI transitions to
+ * awaiting-choice (showing the AwaitingChoiceBar with "Start another" as a
+ * single tap) instead of leaving the user on the RunningBar where the only
+ * action is Stop, then Start.
+ */
+function TimerAutoComplete() {
+  const status = useSessionStore((s) => s.status);
+  const enabled = status === 'signedIn';
+  const timerQ = useTimer();
+  const activitiesQ = useActivities();
+  const completeMut = useCompleteTimer();
+
+  const timer = timerQ.data?.timer ?? null;
+  const config = timerQ.data?.config;
+  const needsComplete = !!timer && !!config
+    && ((timer.half === 1 && timer.firstEntryId == null) || timer.half === 2);
+
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!enabled || !needsComplete) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [enabled, needsComplete]);
+
+  const firingRef = useRef(false);
+  useEffect(() => {
+    if (!enabled || !needsComplete || !timer || !config) return;
+    const elapsed = now - new Date(timer.startedAt).getTime();
+    if (elapsed < config.halfDurationMs) return;
+    if (firingRef.current || completeMut.isPending) return;
+    firingRef.current = true;
+    const activity = activitiesQ.data?.find((a) => a.id === timer.activityId) ?? null;
+    const displayName = activity?.name ?? timer.name ?? 'Block';
+    completeMut.mutate({ displayName }, {
+      onSettled: () => {
+        firingRef.current = false;
+      },
+    });
+  }, [enabled, needsComplete, timer, config, now, completeMut, activitiesQ.data]);
 
   return null;
 }
@@ -102,6 +148,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <SessionGate />
+            <TimerAutoComplete />
             <RunningOverlaySync />
             <StatusBar style="auto" />
             <Stack screenOptions={{ headerShown: false }}>
