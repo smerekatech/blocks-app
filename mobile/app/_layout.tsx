@@ -11,6 +11,7 @@ import * as liveActivity from '~/notifications/liveActivity';
 import * as runningNotification from '~/notifications/runningNotification';
 import { ThemeProvider } from '~/theme/ThemeProvider';
 import { queryClient } from '~/state/queryClient';
+import { startQueryCachePersistence } from '~/state/queryPersistence';
 import { useSessionStore } from '~/state/session';
 import { resolveSwatch } from '~/theme/swatch';
 import { BRAND } from '~/theme/tokens';
@@ -73,6 +74,8 @@ function RunningOverlaySync() {
 }
 
 export default function RootLayout() {
+  useEffect(() => startQueryCachePersistence(queryClient), []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
