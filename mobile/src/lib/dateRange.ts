@@ -16,6 +16,17 @@ export function addDays(iso: string, days: number): string {
   return ymd(date);
 }
 
+/**
+ * Shift a range anchor by one unit of `kind` in the given direction.
+ * Lands the new anchor on day 1 for month/year to avoid month-overflow.
+ */
+export function shiftAnchor(anchor: string, kind: RangeKind, dir: -1 | 1): string {
+  const [y, m] = anchor.split('-').map(Number);
+  if (kind === 'week') return addDays(anchor, dir * 7);
+  if (kind === 'month') return ymd(new Date(y!, m! - 1 + dir, 1));
+  return ymd(new Date(y! + dir, 0, 1));
+}
+
 /** Returns start (inclusive) and end (inclusive) of the requested range, anchored on `today`. */
 export function dateRange(today: string, kind: RangeKind): { from: string; to: string } {
   const [y, m, d] = today.split('-').map(Number);
