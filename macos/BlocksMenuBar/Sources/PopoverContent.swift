@@ -228,10 +228,24 @@ struct PopoverContent: View {
 
     // MARK: - Today
 
+    private var todayTotal: Double {
+        state.entries.reduce(0) { $0 + $1.blocks }
+    }
+
     private var todayView: some View {
         VStack(alignment: .leading, spacing: 6) {
-            sectionHeader("Today")
-                .padding(.horizontal, 10)
+            HStack(spacing: 8) {
+                sectionHeader("Today")
+                Spacer()
+                if !state.entries.isEmpty {
+                    Text("\(formatBlocks(todayTotal)) \(todayTotal == 1 ? "block" : "blocks")")
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(0.6)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+            .padding(.horizontal, 10)
 
             if state.entries.isEmpty {
                 Text("Nothing logged yet")
