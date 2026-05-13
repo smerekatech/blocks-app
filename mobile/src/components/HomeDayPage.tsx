@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Plus } from 'lucide-react-native';
 
@@ -32,8 +32,25 @@ export function HomeDayPage({ date, isToday, activitiesById, onEdit, onAdd, onRe
   const isLoading = entriesQ.isLoading;
   const isEmpty = !isLoading && entries.length === 0;
 
+  const handleRefresh = useCallback(() => {
+    void entriesQ.refetch();
+    onRefresh?.();
+  }, [entriesQ, onRefresh]);
+
   if (isEmpty) {
-    return <EmptyState isToday={isToday} onAdd={onAdd} />;
+    // Wrap the empty state in a ScrollView so pull-to-refresh works when
+    // dragging anywhere on the (otherwise empty) surface.
+    return (
+      <ScrollView
+        style={styles.emptyScroll}
+        contentContainerStyle={styles.emptyScrollContent}
+        refreshControl={(
+          <RefreshControl refreshing={entriesQ.isFetching} onRefresh={handleRefresh} />
+        )}
+      >
+        <EmptyState isToday={isToday} onAdd={onAdd} />
+      </ScrollView>
+    );
   }
 
   return (
@@ -52,10 +69,7 @@ export function HomeDayPage({ date, isToday, activitiesById, onEdit, onAdd, onRe
       ListFooterComponent={onAdd ? <AddBlockButton onPress={onAdd} /> : null}
       contentContainerStyle={styles.listContent}
       refreshing={entriesQ.isFetching}
-      onRefresh={() => {
-        void entriesQ.refetch();
-        onRefresh?.();
-      }}
+      onRefresh={handleRefresh}
     />
   );
 }
@@ -101,6 +115,8 @@ function EmptyState({ isToday, onAdd }: { isToday: boolean; onAdd?: () => void }
 
 const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 },
+  emptyScroll: { flex: 1 },
+  emptyScrollContent: { flexGrow: 1 },
   addWrap: { paddingTop: 8 },
   addBtn: {
     height: 56,
