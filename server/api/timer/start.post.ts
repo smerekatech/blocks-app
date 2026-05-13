@@ -1,5 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
+import { dayFullError, hasDayCapacity } from '~~/server/utils/dayCap'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
@@ -21,6 +22,9 @@ export default defineEventHandler(async (event) => {
   const [existing] = await db.select({ id: schema.runningTimers.id }).from(schema.runningTimers)
     .where(eq(schema.runningTimers.userId, userId))
   if (existing) throw createError({ statusCode: 409, message: 'Timer already running' })
+
+  // A timer eventually produces at least a half block on startedDate.
+  if (!(await hasDayCapacity(db, userId, startedDate, 0.5))) throw dayFullError()
 
   let activityId: number | null = null
   let name: string | null = null

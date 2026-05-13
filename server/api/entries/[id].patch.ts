@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
+import { dayFullError, hasDayCapacity } from '~~/server/utils/dayCap'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
@@ -11,6 +12,13 @@ export default defineEventHandler(async (event) => {
   const patch: Partial<typeof schema.entries.$inferInsert> = {}
   if (body?.blocks === 0.5 || body?.blocks === 1) patch.blocks = body.blocks
   if (Number.isFinite(body?.position)) patch.position = Number(body!.position)
+
+  if (patch.blocks != null) {
+    const [existing] = await db.select({ date: schema.entries.date }).from(schema.entries)
+      .where(and(eq(schema.entries.id, id), eq(schema.entries.userId, userId)))
+    if (!existing) throw createError({ statusCode: 404, message: 'Not found' })
+    if (!(await hasDayCapacity(db, userId, existing.date, patch.blocks, id))) throw dayFullError()
+  }
 
   if (body?.activityId != null) {
     const activityId = Number(body.activityId)

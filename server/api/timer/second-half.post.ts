@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
+import { dayFullError, hasDayCapacity } from '~~/server/utils/dayCap'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
@@ -11,6 +12,11 @@ export default defineEventHandler(async (event) => {
 
   if (row.half !== 1 || row.firstEntryId == null) {
     throw createError({ statusCode: 409, message: 'Not in awaiting-choice state' })
+  }
+
+  // Second half will finalize the entry from 0.5 to 1, adding 0.5 to the day.
+  if (!(await hasDayCapacity(db, userId, row.startedDate, 0.5, row.firstEntryId))) {
+    throw dayFullError()
   }
 
   const [updated] = await db.update(schema.runningTimers)
