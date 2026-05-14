@@ -37,13 +37,9 @@ struct DynamicIslandView {
     } compactLeading: {
       Circle()
         .fill(tint)
-        .frame(width: 8, height: 8)
-        .padding(.leading, 2)
+        .frame(width: 12, height: 12)
     } compactTrailing: {
-      Text(timerInterval: state.startedAt...state.endsAt, countsDown: true)
-        .font(.system(size: 14, weight: .semibold, design: .rounded))
-        .monospacedDigit()
-        .frame(minWidth: 44)
+      EmptyView()
     } minimal: {
       Circle()
         .fill(tint)
