@@ -4,17 +4,12 @@ type MonthGroupBy = 'day' | 'week'
 
 const range = ref<Range>('week')
 const cursor = ref(today())
-const monthGroupBy = ref<MonthGroupBy>('day')
+const monthGroupBy = ref<MonthGroupBy>('week')
 
 const rangeItems = [
   { label: 'Workweek', value: 'workweek' },
   { label: 'Week', value: 'week' },
   { label: 'Month', value: 'month' }
-]
-
-const monthGroupItems = [
-  { label: 'Day', value: 'day' },
-  { label: 'Week', value: 'week' }
 ]
 
 const from = computed(() => {
@@ -153,12 +148,23 @@ const isDark = useIsDark()
         :items="rangeItems"
         orientation="horizontal"
       />
-      <URadioGroup
+      <UButtonGroup
         v-if="range === 'month'"
-        v-model="monthGroupBy"
-        :items="monthGroupItems"
-        orientation="horizontal"
-      />
+        size="sm"
+      >
+        <UButton
+          :variant="monthGroupBy === 'day' ? 'solid' : 'ghost'"
+          :color="monthGroupBy === 'day' ? 'primary' : 'neutral'"
+          label="Day"
+          @click="monthGroupBy = 'day'"
+        />
+        <UButton
+          :variant="monthGroupBy === 'week' ? 'solid' : 'ghost'"
+          :color="monthGroupBy === 'week' ? 'primary' : 'neutral'"
+          label="Week"
+          @click="monthGroupBy = 'week'"
+        />
+      </UButtonGroup>
       <div class="ml-auto text-sm text-muted">
         Total: <span class="font-semibold text-default tabular-nums">{{ fmtTotal(stats?.total ?? 0) }}</span> blocks
       </div>

@@ -99,17 +99,26 @@ function makeBuckets(range: { from: string; to: string }, kind: RangeKind): Buck
   }
 
   if (kind === 'month') {
+    // Monday-anchored weeks overlapping the month. byDay is already clipped
+    // to the month range, so edge weeks sum only the days inside the month.
     const [ty, tm, td] = range.to.split('-').map(Number);
-    const end = new Date(ty!, tm! - 1, td!);
-    const dayCount = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
-    return Array.from({ length: dayCount }, (_, i) => {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const iso = ymd(d);
-      // Label every 5th day to avoid axis crowding.
-      const label = i === 0 || (i + 1) % 5 === 0 ? String(d.getDate()) : '';
-      return { start: iso, end: iso, label };
-    });
+    const monthEnd = new Date(ty!, tm! - 1, td!);
+    const firstDay = start.getDay(); // Sunday=0
+    const offsetToMonday = firstDay === 0 ? 6 : firstDay - 1;
+    const weekStart = new Date(start);
+    weekStart.setDate(start.getDate() - offsetToMonday);
+    const buckets: BucketSpec[] = [];
+    while (weekStart <= monthEnd) {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      buckets.push({
+        start: ymd(weekStart),
+        end: ymd(weekEnd),
+        label: String(weekStart.getDate()),
+      });
+      weekStart.setDate(weekStart.getDate() + 7);
+    }
+    return buckets;
   }
 
   // year — 12 monthly buckets.
