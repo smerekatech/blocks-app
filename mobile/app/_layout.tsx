@@ -68,7 +68,15 @@ function RunningOverlaySync() {
       half: timer.half,
     };
 
-    void liveActivity.start(args);
+    // Awaiting-choice = half 1 finished and the user hasn't picked
+    // "start next" or "stop" yet. There's no live countdown to show, so hide
+    // the iOS Live Activity until the next half actually starts.
+    const isAwaitingChoice = timer.half === 1 && timer.firstEntryId != null;
+    if (isAwaitingChoice) {
+      void liveActivity.end();
+    } else {
+      void liveActivity.start(args);
+    }
     void runningNotification.start(args);
   }, [enabled, timerQ.data, activitiesQ.data]);
 
