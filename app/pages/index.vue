@@ -42,6 +42,7 @@ const { data: allActivities, refresh: refreshActivities } = await useAsyncData<A
   () => $fetch('/api/activities', { query: { includeArchived: '1' } }),
   { default: () => [], server: false }
 )
+useRefreshOnFocus(refreshActivities)
 
 const nuxt = useNuxtApp()
 nuxt.hook('blocks:entries-changed', () => {

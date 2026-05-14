@@ -202,7 +202,7 @@ function AndroidSheet(props: Props) {
           </Text>
           {inAwaitingChoice ? (
             <>
-              <SheetButton label="Start second half" onPress={() => dismiss(() => void actions.secondHalf())} />
+              <SheetButton label="Second half" onPress={() => dismiss(() => void actions.secondHalf())} />
               <SheetButton label="Stop" destructive onPress={() => dismiss(() => void actions.stop())} />
             </>
           ) : ready ? (
