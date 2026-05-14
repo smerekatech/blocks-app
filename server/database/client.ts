@@ -2,9 +2,11 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-let _db: ReturnType<typeof drizzle<typeof schema>> | null = null
+export type Db = ReturnType<typeof drizzle<typeof schema>>
 
-export function useDb() {
+let _db: Db | null = null
+
+export function useDb(): Db {
   if (_db) return _db
   const url = useRuntimeConfig().databaseUrl
   if (!url) {
