@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
+import { AppState, Platform } from 'react-native';
+import type { AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useActivities } from '~/hooks/useActivities';
@@ -11,6 +13,7 @@ import * as liveActivity from '~/notifications/liveActivity';
 import * as runningNotification from '~/notifications/runningNotification';
 import { ThemeProvider } from '~/theme/ThemeProvider';
 import { queryClient } from '~/state/queryClient';
+import { startQueryCachePersistence } from '~/state/queryPersistence';
 import { useSessionStore } from '~/state/session';
 import { resolveSwatch } from '~/theme/swatch';
 import { BRAND } from '~/theme/tokens';
@@ -72,7 +75,19 @@ function RunningOverlaySync() {
   return null;
 }
 
+function onAppStateChange(status: AppStateStatus) {
+  if (Platform.OS === 'web') return;
+  focusManager.setFocused(status === 'active');
+}
+
 export default function RootLayout() {
+  useEffect(() => startQueryCachePersistence(queryClient), []);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', onAppStateChange);
+    return () => sub.remove();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

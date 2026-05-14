@@ -1,6 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
+import { queryClient } from './queryClient';
+import { clearPersistedQueryCache } from './queryPersistence';
+
 const KEY = 'nuxt-session';
 
 export type SessionStatus = 'loading' | 'signedIn' | 'signedOut';
@@ -26,6 +29,8 @@ export const useSessionStore = create<SessionState>((set) => ({
   },
   async clear() {
     await SecureStore.deleteItemAsync(KEY);
+    queryClient.clear();
+    clearPersistedQueryCache();
     set({ cookie: null, status: 'signedOut' });
   },
 }));
