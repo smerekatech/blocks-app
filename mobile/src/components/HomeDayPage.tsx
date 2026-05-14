@@ -1,6 +1,5 @@
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { Plus } from 'lucide-react-native';
 
 import type { Activity, Entry } from '~/api/types';
@@ -20,9 +19,6 @@ interface Props {
   onRefresh?: () => void;
 }
 
-const keyExtractor = (item: Entry) => String(item.id);
-const Separator = () => <View style={{ height: 8 }} />;
-
 export function HomeDayPage({ date, isToday, activitiesById, onEdit, onAdd, onRefresh }: Props) {
   const range = useMemo(() => ({ from: date, to: date }), [date]);
   const entriesQ = useEntries(range);
@@ -37,40 +33,39 @@ export function HomeDayPage({ date, isToday, activitiesById, onEdit, onAdd, onRe
     onRefresh?.();
   }, [entriesQ, onRefresh]);
 
-  if (isEmpty) {
-    // Wrap the empty state in a ScrollView so pull-to-refresh works when
-    // dragging anywhere on the (otherwise empty) surface.
-    return (
-      <ScrollView
-        style={styles.emptyScroll}
-        contentContainerStyle={styles.emptyScrollContent}
-        refreshControl={(
-          <RefreshControl refreshing={entriesQ.isFetching} onRefresh={handleRefresh} />
-        )}
-      >
-        <EmptyState isToday={isToday} onAdd={onAdd} />
-      </ScrollView>
-    );
-  }
-
+  // The whole page is a single ScrollView so pull-to-refresh works from
+  // anywhere on the surface, including the empty area below a short list.
+  // Blocks are capped at 12/day so virtualization isn't necessary.
   return (
-    <FlashList<Entry>
-      data={entries}
-      keyExtractor={keyExtractor}
-      renderItem={({ item }) => (
-        <SwipeableBlockRow
-          entry={item}
-          activity={item.activityId != null ? activitiesById.get(item.activityId) ?? null : null}
-          onEdit={onEdit}
-          onDelete={(e) => deleteMut.mutate(e.id)}
-        />
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={[
+        styles.scrollContent,
+        isEmpty ? styles.emptyContent : styles.listContent,
+      ]}
+      refreshControl={(
+        <RefreshControl refreshing={entriesQ.isFetching} onRefresh={handleRefresh} />
       )}
-      ItemSeparatorComponent={Separator}
-      ListFooterComponent={onAdd ? <AddBlockButton onPress={onAdd} /> : null}
-      contentContainerStyle={styles.listContent}
-      refreshing={entriesQ.isFetching}
-      onRefresh={handleRefresh}
-    />
+    >
+      {isEmpty ? (
+        <EmptyState isToday={isToday} onAdd={onAdd} />
+      ) : (
+        <>
+          {entries.map((entry, i) => (
+            <Fragment key={entry.id}>
+              {i > 0 && <View style={styles.separator} />}
+              <SwipeableBlockRow
+                entry={entry}
+                activity={entry.activityId != null ? activitiesById.get(entry.activityId) ?? null : null}
+                onEdit={onEdit}
+                onDelete={(e) => deleteMut.mutate(e.id)}
+              />
+            </Fragment>
+          ))}
+          {onAdd && <AddBlockButton onPress={onAdd} />}
+        </>
+      )}
+    </ScrollView>
   );
 }
 
@@ -114,9 +109,11 @@ function EmptyState({ isToday, onAdd }: { isToday: boolean; onAdd?: () => void }
 }
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
   listContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 },
-  emptyScroll: { flex: 1 },
-  emptyScrollContent: { flexGrow: 1 },
+  emptyContent: { justifyContent: 'center' },
+  separator: { height: 8 },
   addWrap: { paddingTop: 8 },
   addBtn: {
     height: 56,
