@@ -86,10 +86,15 @@ export function RunningBar({ timer, config, activity, onTap, onStop }: Props) {
           <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
             {displayName}
           </Text>
-          <Text style={[styles.status, { color: tokens.textSecondary }]} numberOfLines={1}>
-            {halfLabel} · {formatRemaining(clampedSec, totalSec)} left
-          </Text>
+          {timer.half === 2 && (
+            <Text style={[styles.status, { color: tokens.textSecondary }]} numberOfLines={1}>
+              {halfLabel}
+            </Text>
+          )}
         </View>
+        <Text style={[styles.remaining, { color: colors.text }]} numberOfLines={1}>
+          {formatRemaining(clampedSec, totalSec)}
+        </Text>
         {onStop && (
           <Pressable
             onPress={onStop}
@@ -151,14 +156,20 @@ const styles = StyleSheet.create({
   },
   center: { flex: 1, minWidth: 0, gap: 2 },
   name: { fontSize: 15, fontWeight: '600' },
-  status: { fontSize: 12, fontVariant: ['tabular-nums'] },
+  status: { fontSize: 12 },
+  remaining: {
+    fontSize: 22,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    marginLeft: 8,
+    marginRight: 12,
+  },
   stopBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
   },
   stopSquare: {
     width: 11,
