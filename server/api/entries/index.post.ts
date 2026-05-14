@@ -1,5 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
+import { dayFullError, hasDayCapacity } from '~~/server/utils/dayCap'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
@@ -17,6 +18,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useDb()
+
+  if (!(await hasDayCapacity(db, userId, date, blocks))) throw dayFullError()
+
   let activityId: number | null = null
   let name: string | null = null
 

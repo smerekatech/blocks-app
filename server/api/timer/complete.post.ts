@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { useDb, schema } from '~~/server/database/client'
+import { dayFullError, hasDayCapacity } from '~~/server/utils/dayCap'
 import { HALF_DURATION_MS, elapsedMs, finalizeAndStop, promoteHalfOne } from '~~/server/utils/timer'
 
 export default defineEventHandler(async (event) => {
@@ -16,6 +17,9 @@ export default defineEventHandler(async (event) => {
   }
 
   if (row.half === 1) {
+    if (row.firstEntryId == null && !(await hasDayCapacity(db, userId, row.startedDate, 0.5))) {
+      throw dayFullError()
+    }
     const firstEntryId = await promoteHalfOne(db, row)
     return {
       state: 'awaiting-choice' as const,
@@ -25,6 +29,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (row.firstEntryId != null
+    && !(await hasDayCapacity(db, userId, row.startedDate, 0.5, row.firstEntryId))) {
+    throw dayFullError()
+  }
   await finalizeAndStop(db, row)
   return {
     state: 'completed' as const,
