@@ -26,6 +26,7 @@ const { data: activities, refresh } = await useAsyncData<Activity[]>(
   () => $fetch('/api/activities', { query: { includeArchived: '1' } }),
   { default: () => [], server: false }
 )
+useRefreshOnFocus(refresh)
 
 const active = computed(() => activities.value.filter(a => !a.archivedAt))
 const archived = computed(() => activities.value.filter(a => a.archivedAt))

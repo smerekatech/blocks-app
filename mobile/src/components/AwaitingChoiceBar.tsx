@@ -34,6 +34,15 @@ export function AwaitingChoiceBar({ timer, activity, onStartNext, onStartAnother
       </View>
       <View style={styles.actions}>
         <Pressable
+          onPress={onStartNext}
+          style={({ pressed }) => [
+            styles.btn,
+            { backgroundColor: BRAND.accent, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Text style={[styles.btnText, { color: '#FFFFFF' }]}>Second half</Text>
+        </Pressable>
+        <Pressable
           onPress={onStartAnother}
           style={({ pressed }) => [
             styles.btn,
@@ -41,16 +50,7 @@ export function AwaitingChoiceBar({ timer, activity, onStartNext, onStartAnother
             { borderColor: tokens.separator, opacity: pressed ? 0.7 : 1 },
           ]}
         >
-          <Text style={[styles.btnText, { color: tokens.text }]}>Start another</Text>
-        </Pressable>
-        <Pressable
-          onPress={onStartNext}
-          style={({ pressed }) => [
-            styles.btn,
-            { backgroundColor: BRAND.accent, opacity: pressed ? 0.85 : 1 },
-          ]}
-        >
-          <Text style={[styles.btnText, { color: '#FFFFFF' }]}>Start next</Text>
+          <Text style={[styles.btnText, { color: tokens.text }]}>New activity</Text>
         </Pressable>
       </View>
     </View>

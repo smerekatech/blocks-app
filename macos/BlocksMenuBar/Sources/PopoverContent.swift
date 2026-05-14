@@ -205,7 +205,7 @@ struct PopoverContent: View {
                 Button {
                     Task { await state.secondHalf() }
                 } label: {
-                    Text("Start next")
+                    Text("Second half")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -214,7 +214,7 @@ struct PopoverContent: View {
                 Button {
                     Task { await state.stopTimer() }
                 } label: {
-                    Text("Start another")
+                    Text("New activity")
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .frame(maxWidth: .infinity)
@@ -306,15 +306,6 @@ struct PopoverContent: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .fixedSize()
-
-            Button {
-                state.signOut()
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 12))
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
     }
 

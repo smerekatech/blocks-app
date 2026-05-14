@@ -32,7 +32,7 @@ const isAtCurrent = computed(() => {
   return t >= from.value && t <= to.value
 })
 
-const { data: stats } = await useAsyncData(
+const { data: stats, refresh: refreshStats } = await useAsyncData(
   'stats',
   () => $fetch('/api/stats', { query: { from: from.value, to: to.value } }),
   {
@@ -41,6 +41,7 @@ const { data: stats } = await useAsyncData(
     default: () => ({ from: '', to: '', total: 0, byDay: [], byActivity: [] })
   }
 )
+useRefreshOnFocus(refreshStats)
 
 const bars = computed(() => {
   const list = stats.value
