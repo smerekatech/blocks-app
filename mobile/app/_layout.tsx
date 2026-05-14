@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
+import { AppState, Platform } from 'react-native';
+import type { AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useActivities } from '~/hooks/useActivities';
@@ -73,8 +75,18 @@ function RunningOverlaySync() {
   return null;
 }
 
+function onAppStateChange(status: AppStateStatus) {
+  if (Platform.OS === 'web') return;
+  focusManager.setFocused(status === 'active');
+}
+
 export default function RootLayout() {
   useEffect(() => startQueryCachePersistence(queryClient), []);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', onAppStateChange);
+    return () => sub.remove();
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
