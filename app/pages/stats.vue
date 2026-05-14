@@ -27,6 +27,11 @@ const periodLabel = computed(() => {
   return formatRange(from.value, to.value)
 })
 
+const isAtCurrent = computed(() => {
+  const t = today()
+  return t >= from.value && t <= to.value
+})
+
 const { data: stats } = await useAsyncData(
   'stats',
   () => $fetch('/api/stats', { query: { from: from.value, to: to.value } }),
@@ -98,6 +103,7 @@ function prev() {
   else cursor.value = addDays(cursor.value, -7)
 }
 function next() {
+  if (isAtCurrent.value) return
   if (range.value === 'month') cursor.value = addMonths(cursor.value, 1)
   else cursor.value = addDays(cursor.value, 7)
 }
@@ -137,6 +143,7 @@ const isDark = useIsDark()
           color="neutral"
           variant="ghost"
           size="sm"
+          :disabled="isAtCurrent"
           @click="next"
         />
       </div>

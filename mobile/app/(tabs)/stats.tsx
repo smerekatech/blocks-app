@@ -83,9 +83,19 @@ export default function StatsScreen() {
   const [kind, setKind] = useState<RangeKind>('week');
   const [anchor, setAnchor] = useState(today);
 
+  // Don't allow paging past the current week/month/year.
+  const currentRange = useMemo(() => dateRange(today, kind), [today, kind]);
+  const isAtCurrent = useMemo(
+    () => today >= currentRange.from && today <= currentRange.to
+      && anchor >= currentRange.from && anchor <= currentRange.to,
+    [today, anchor, currentRange],
+  );
+
   const pages = useMemo(
-    () => [shiftAnchor(anchor, kind, -1), anchor, shiftAnchor(anchor, kind, 1)],
-    [anchor, kind],
+    () => isAtCurrent
+      ? [shiftAnchor(anchor, kind, -1), anchor]
+      : [shiftAnchor(anchor, kind, -1), anchor, shiftAnchor(anchor, kind, 1)],
+    [anchor, kind, isAtCurrent],
   );
   const pagerRef = useRef<PagerView>(null);
   const isUserSwipeRef = useRef(false);
@@ -124,7 +134,7 @@ export default function StatsScreen() {
       </View>
 
       <PagerView
-        key={kind}
+        key={`${kind}-${isAtCurrent ? 'cur' : 'past'}`}
         ref={pagerRef}
         style={styles.pager}
         initialPage={1}
