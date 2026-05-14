@@ -43,7 +43,7 @@ export function weekdays(startYmd: string, count = 5): Array<{ date: string, lab
   })
 }
 
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const WEEKDAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export function formatRange(startYmd: string, endYmd: string): string {
@@ -83,6 +83,18 @@ export function formatMonth(ymd: string): string {
   const d = fromYmd(ymd)
   const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   return `${MONTHS_LONG[d.getMonth()]} ${d.getFullYear()}`
+}
+
+export function weeksOverlappingMonth(ymd: string): Array<{ start: string, end: string }> {
+  const monthStart = startOfMonth(ymd)
+  const monthEnd = endOfMonth(ymd)
+  const weeks: Array<{ start: string, end: string }> = []
+  let weekStart = startOfWeekMonday(monthStart)
+  while (weekStart <= monthEnd) {
+    weeks.push({ start: weekStart, end: addDays(weekStart, 6) })
+    weekStart = addDays(weekStart, 7)
+  }
+  return weeks
 }
 
 export function monthGridStart(ymd: string): string {

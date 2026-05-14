@@ -1,8 +1,10 @@
 <script setup lang="ts">
 type Range = 'workweek' | 'week' | 'month'
+type MonthGroupBy = 'day' | 'week'
 
 const range = ref<Range>('week')
 const cursor = ref(today())
+const monthGroupBy = ref<MonthGroupBy>('week')
 
 const rangeItems = [
   { label: 'Workweek', value: 'workweek' },
@@ -54,7 +56,24 @@ const bars = computed(() => {
       }
     })
   }
-  // month: one bar per day
+  // month grouped by week: sum byDay (already month-clipped) per overlapping week
+  if (monthGroupBy.value === 'week') {
+    const weeks = weeksOverlappingMonth(cursor.value)
+    return weeks.map((w) => {
+      let blocks = 0
+      for (const d of list.byDay) {
+        if (d.date >= w.start && d.date <= w.end) blocks += d.blocks
+      }
+      const monday = fromYmd(w.start)
+      return {
+        label: String(monday.getDate()),
+        sub: MONTHS_SHORT[monday.getMonth()] ?? '',
+        value: blocks,
+        highlight: t >= w.start && t <= w.end
+      }
+    })
+  }
+  // month grouped by day: one bar per day
   const start = fromYmd(from.value)
   const end = fromYmd(to.value)
   const count = (end.getTime() - start.getTime()) / 86400000 + 1
@@ -123,12 +142,29 @@ const isDark = useIsDark()
       </div>
     </div>
 
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-6 flex items-center gap-3 flex-wrap">
       <URadioGroup
         v-model="range"
         :items="rangeItems"
         orientation="horizontal"
       />
+      <UButtonGroup
+        v-if="range === 'month'"
+        size="sm"
+      >
+        <UButton
+          :variant="monthGroupBy === 'day' ? 'solid' : 'ghost'"
+          :color="monthGroupBy === 'day' ? 'primary' : 'neutral'"
+          label="Day"
+          @click="monthGroupBy = 'day'"
+        />
+        <UButton
+          :variant="monthGroupBy === 'week' ? 'solid' : 'ghost'"
+          :color="monthGroupBy === 'week' ? 'primary' : 'neutral'"
+          label="Week"
+          @click="monthGroupBy = 'week'"
+        />
+      </UButtonGroup>
       <div class="ml-auto text-sm text-muted">
         Total: <span class="font-semibold text-default tabular-nums">{{ fmtTotal(stats?.total ?? 0) }}</span> blocks
       </div>
